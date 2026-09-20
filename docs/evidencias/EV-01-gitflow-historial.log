@@ -1,21 +1,45 @@
 ======================================================================
   EVIDENCIA EV-01 - HISTORIAL DE GITFLOW
   Repositorio: Sistema de Reservas Turísticas - IPLACEX
-  Generado: 2026-09-20T19:27:23Z
+  Generado: 2026-09-20T20:23:18Z
 ======================================================================
 
   1. GRAFO DE RAMAS, COMMITS Y MERGES
 ----------------------------------------------------------------------
-*   f9ca028 (develop) Merge branch 'main' into develop
+*   8d7123b (develop) Merge branch 'release/1.1.0' into develop
 |\  
-| * fa4d496 (HEAD -> main) docs: agregar guía de entrega y resolución de problemas frecuentes
-* | 9e90b51 Merge branch 'main' into develop
-|\| 
-| * 0587789 docs: incorporar la evidencia del historial GitFlow
-| *   e2aa19e (tag: v1.0.0) Merge branch 'release/1.0.0' into main
-| |\  
-* | \   591c005 Merge branch 'release/1.0.0' into develop
+| | *   780df03 (HEAD -> main, tag: v1.1.0) Merge branch 'release/1.1.0' into main
+| | |\  
+| | |/  
+| |/|   
+| * | 42d16f8 (release/1.1.0) docs: actualizar evidencias e incorporar capturas del sistema
+|/ /  
+* |   8f49f51 Merge branch 'feature/portal-web' into develop
+|\ \  
+| * | 7b6a510 (feature/portal-web) feat: identificar visualmente el entorno en el portal web
+|/ /  
+* |   a35284d Merge branch 'hotfix/1.0.1' into develop
+|\ \  
+* \ \   949401f Merge branch 'main' into develop
 |\ \ \  
+* \ \ \   f9ca028 Merge branch 'main' into develop
+|\ \ \ \  
+* \ \ \ \   9e90b51 Merge branch 'main' into develop
+|\ \ \ \ \  
+* \ \ \ \ \   591c005 Merge branch 'release/1.0.0' into develop
+|\ \ \ \ \ \  
+| | | | | | * dcd749c (tag: v1.0.1) Merge branch 'hotfix/1.0.1' into main
+| | | | | |/| 
+| | | | |/|/  
+| | | | | * 3e710ff (hotfix/1.0.1) fix(infra): evitar que la limpieza termine procesos ajenos
+| | | | |/  
+| | | | * d5c29a9 docs: actualizar la evidencia del historial GitFlow
+| | | |/  
+| | | * fa4d496 docs: agregar guía de entrega y resolución de problemas frecuentes
+| | |/  
+| | * 0587789 docs: incorporar la evidencia del historial GitFlow
+| | *   e2aa19e (tag: v1.0.0) Merge branch 'release/1.0.0' into main
+| | |\  
 | | |/  
 | |/|   
 | * | 5ed815a (release/1.0.0) docs: incorporar las evidencias de ejecución real
@@ -63,15 +87,18 @@
 
   2. RAMAS DEL FLUJO GITFLOW
 ----------------------------------------------------------------------
-  develop                     f9ca028 Merge branch 'main' into develop
+  develop                     8d7123b Merge branch 'release/1.1.0' into develop
   feature/deploy-workflow     f0975a5 ci: agregar workflow de despliegue en GitHub Actions
   feature/deployment-pipeline c29df66 ci: agregar el deployment pipeline con acceptance gate
   feature/estructura-maven    9e7ba56 feat: exponer la API REST y el portal web del sistema
   feature/pipeline-ci         0f4e320 ci: agregar workflow de GitHub Actions
+  feature/portal-web          7b6a510 feat: identificar visualmente el entorno en el portal web
   feature/pruebas-integracion 1014537 test: agregar la suite E2E del portal web con Selenium
   feature/pruebas-unitarias   fe5da2f test: agregar pruebas unitarias del servicio con Mockito
-* main                        fa4d496 docs: agregar guía de entrega y resolución de problemas frecuentes
+  hotfix/1.0.1                3e710ff fix(infra): evitar que la limpieza termine procesos ajenos
+* main                        780df03 Merge branch 'release/1.1.0' into main
   release/1.0.0               5ed815a docs: incorporar las evidencias de ejecución real
+  release/1.1.0               42d16f8 docs: actualizar evidencias e incorporar capturas del sistema
 
   3. TAGS DE VERSIÓN
 ----------------------------------------------------------------------
@@ -80,12 +107,15 @@ v1.0.0          Versión 1.0.0 - Actividades 1, 2 y 3 completas
     Repositorio GitFlow, proyecto Maven con dependencias de prueba,
     pipeline de CI con pruebas unitarias y de integración, y deployment
     pipeline con acceptance gate, Blue-Green, Canary y rollback.
+v1.0.1          Hotfix 1.0.1 - correccion de la terminacion de procesos en limpiar.sh
+v1.1.0          Version 1.1.0 - portal con identificacion de entorno y evidencias visuales
 
   4. RESUMEN
 ----------------------------------------------------------------------
-  Commits totales           : 33
-  Commits de merge (--no-ff): 10
-  Ramas feature/*           : 6
-  Ramas release/*           : 1
-  Tags                      : 1
-  Archivos versionados      : 51
+  Commits totales           : 43
+  Commits de merge (--no-ff): 16
+  Ramas feature/*           : 7
+  Ramas release/*           : 2
+  Ramas hotfix/*            : 1
+  Tags                      : 3
+  Archivos versionados      : 58
