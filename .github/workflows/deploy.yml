@@ -1,0 +1,143 @@
+# =============================================================================
+#  ACTIVIDAD 3 - DEPLOYMENT PIPELINE EJECUTABLE EN GITHUB ACTIONS
+# -----------------------------------------------------------------------------
+#  Ejecuta el deployment pipeline completo sobre el runner: aprovisiona el
+#  ambiente, pasa el Acceptance Gate y despliega con la estrategia elegida,
+#  incluyendo la demostración del rollback automático.
+#
+#  Su valor práctico: genera EVIDENCIA VERIFICABLE del despliegue y del
+#  rollback sin necesidad de instalar Jenkins, ya que cada ejecución queda
+#  registrada con sus logs en la pestaña "Actions" del repositorio.
+# =============================================================================
+
+name: CD - Deployment Pipeline (Blue-Green / Canary / Rollback)
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Versión a desplegar'
+        required: true
+        default: '1.1.0'
+      estrategia:
+        description: 'Estrategia de despliegue'
+        required: true
+        default: 'blue-green'
+        type: choice
+        options:
+          - blue-green
+          - canary
+      simular_fallo:
+        description: 'Desplegar una versión defectuosa para demostrar el rollback automático'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+
+  deployment-pipeline:
+    name: Deployment Pipeline
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      # ---------------------------------------------------------------------
+      # COMMIT STAGE: el artefacto se construye UNA sola vez y es el que se
+      # promueve por todos los ambientes ("build once, deploy many").
+      # ---------------------------------------------------------------------
+      - name: Commit Stage - construir y probar el artefacto
+        run: |
+          mvn -B --no-transfer-progress clean package -DskipTests
+          mvn -B --no-transfer-progress test
+
+      - name: Dar permisos de ejecución a los scripts de infraestructura
+        run: chmod +x infra/*.sh
+
+      # ---------------------------------------------------------------------
+      # APROVISIONAMIENTO DEL AMBIENTE
+      # ---------------------------------------------------------------------
+      - name: Aprovisionar el ambiente de despliegue
+        run: ./infra/preparar-ambiente.sh --version 1.0.0
+
+      # ---------------------------------------------------------------------
+      # ACCEPTANCE TEST GATE: barrera previa a producción
+      # ---------------------------------------------------------------------
+      - name: Acceptance Test Gate
+        run: ./infra/acceptance-gate.sh --version ${{ inputs.version }}
+
+      # ---------------------------------------------------------------------
+      # DESPLIEGUE A PRODUCCIÓN
+      # El código de salida 3 indica que se ejecutó un rollback automático:
+      # el despliegue no prosperó, pero el mecanismo de recuperación sí
+      # funcionó y producción quedó sana. Se reporta como advertencia.
+      # ---------------------------------------------------------------------
+      - name: Desplegar a producción
+        id: despliegue
+        run: |
+          BANDERA=""
+          if [ "${{ inputs.simular_fallo }}" = "true" ]; then
+            BANDERA="--fallo-tras 4"
+          fi
+
+          # GitHub Actions ejecuta cada 'run' con 'bash -e': sin el '|| CODIGO=$?'
+          # el paso abortaría antes de poder leer el código 3 del rollback, y una
+          # recuperación exitosa se reportaría como un fallo del pipeline.
+          CODIGO=0
+          if [ "${{ inputs.estrategia }}" = "canary" ]; then
+            ./infra/deploy-canary.sh --version ${{ inputs.version }} $BANDERA || CODIGO=$?
+          else
+            ./infra/deploy-blue-green.sh --version ${{ inputs.version }} $BANDERA || CODIGO=$?
+          fi
+
+          if [ $CODIGO -eq 3 ]; then
+            echo "resultado=rollback" >> $GITHUB_OUTPUT
+            echo "::warning::Rollback automático ejecutado. Producción permanece estable."
+            exit 0
+          elif [ $CODIGO -ne 0 ]; then
+            echo "resultado=fallido" >> $GITHUB_OUTPUT
+            exit $CODIGO
+          fi
+          echo "resultado=exitoso" >> $GITHUB_OUTPUT
+
+      # ---------------------------------------------------------------------
+      # VERIFICACIÓN POSTERIOR
+      # ---------------------------------------------------------------------
+      - name: Verificar el estado final del ambiente
+        if: always()
+        run: ./infra/rollback.sh --estado
+
+      # ---------------------------------------------------------------------
+      # EVIDENCIA Y AUDITORÍA
+      # ---------------------------------------------------------------------
+      - name: Publicar la bitácora de auditoría del despliegue
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: evidencia-despliegue-${{ inputs.version }}
+          path: |
+            infra/estado/historial-despliegues.log
+            infra/estado/logs/
+
+      - name: Resumen del despliegue
+        if: always()
+        run: |
+          echo "### Deployment Pipeline" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Versión solicitada: \`${{ inputs.version }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Estrategia: \`${{ inputs.estrategia }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Resultado: \`${{ steps.despliegue.outputs.resultado }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Bitácora completa disponible en los artefactos de esta ejecución." >> $GITHUB_STEP_SUMMARY
+
+      - name: Limpiar el ambiente
+        if: always()
+        run: ./infra/limpiar.sh || true
