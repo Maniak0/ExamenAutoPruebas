@@ -182,29 +182,114 @@ public class ServidorReservas {
         }
     }
 
-    /** Portal web mínimo: superficie de prueba para la suite E2E con Selenium. */
+    /**
+     * Portal web del sistema y superficie de prueba de la suite E2E.
+     *
+     * <p>El entorno que atiende la petición (azul, verde o canary) se muestra
+     * con un distintivo de color. No es un adorno: durante un despliegue
+     * Blue-Green o Canary permite comprobar visualmente, desde el navegador, a
+     * qué instancia está llegando el tráfico en cada momento.</p>
+     */
     private void manejarPortal(HttpExchange intercambio) throws IOException {
+        String colorEntorno = switch (color) {
+            case "verde"  -> "#1d8a4e";
+            case "canary" -> "#b8860b";
+            case "staging" -> "#5b5bd6";
+            default       -> "#1f5fa9";
+        };
+
         String html = """
                 <!DOCTYPE html>
                 <html lang="es">
                 <head>
                   <meta charset="UTF-8">
+                  <meta name="viewport" content="width=device-width, initial-scale=1">
                   <title>Portal de Reservas Turisticas</title>
+                  <style>
+                    * { box-sizing: border-box; }
+                    body {
+                      margin: 0; padding: 32px 24px;
+                      font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+                      background: #f4f6f8; color: #1a1a1a;
+                    }
+                    .contenedor { max-width: 760px; margin: 0 auto; }
+                    .cabecera {
+                      display: flex; align-items: center; justify-content: space-between;
+                      gap: 16px; flex-wrap: wrap; margin-bottom: 24px;
+                    }
+                    h1#titulo { font-size: 26px; margin: 0; font-weight: 650; letter-spacing: -0.2px; }
+                    #version-app {
+                      margin: 0; padding: 7px 14px; border-radius: 999px;
+                      background: %s; color: #fff;
+                      font-size: 13px; font-weight: 600; white-space: nowrap;
+                    }
+                    .tarjeta {
+                      background: #fff; border: 1px solid #e2e6ea; border-radius: 10px;
+                      padding: 22px; box-shadow: 0 1px 3px rgba(0,0,0,.05);
+                    }
+                    .tarjeta h2 { font-size: 15px; margin: 0 0 18px; color: #4a5560; font-weight: 600; }
+                    .campos { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+                    .campo { display: flex; flex-direction: column; gap: 5px; }
+                    .campo label { font-size: 12px; color: #5c6670; font-weight: 600; }
+                    input {
+                      padding: 9px 11px; border: 1px solid #ccd3da; border-radius: 6px;
+                      font-size: 14px; font-family: inherit; background: #fff;
+                    }
+                    input:focus { outline: 2px solid %s; outline-offset: -1px; border-color: transparent; }
+                    button#btn-reservar {
+                      margin-top: 18px; padding: 10px 22px; border: 0; border-radius: 6px;
+                      background: %s; color: #fff; font-size: 14px; font-weight: 600;
+                      font-family: inherit; cursor: pointer;
+                    }
+                    #mensaje:not(:empty) {
+                      margin-top: 18px; padding: 12px 14px; border-radius: 6px;
+                      font-size: 14px; font-weight: 500;
+                      background: #e8f5ee; color: #14663a; border: 1px solid #b7e0c8;
+                    }
+                    #mensaje.error { background: #fdecea; color: #8a1c13; border-color: #f5c2bd; }
+                    .pie { margin-top: 20px; font-size: 12px; color: #78838d; }
+                  </style>
                 </head>
                 <body>
-                  <h1 id="titulo">Sistema de Reservas Turisticas</h1>
-                  <p id="version-app">Version: %s | Entorno: %s</p>
+                  <div class="contenedor">
+                    <div class="cabecera">
+                      <h1 id="titulo">Sistema de Reservas Turisticas</h1>
+                      <p id="version-app">Version: %s | Entorno: %s</p>
+                    </div>
 
-                  <form id="form-reserva">
-                    <input type="text" id="cliente" name="cliente" placeholder="Nombre del cliente">
-                    <input type="text" id="destino" name="destino" placeholder="Destino">
-                    <input type="number" id="noches" name="noches" value="3">
-                    <input type="number" id="personas" name="personas" value="2">
-                    <button type="button" id="btn-reservar">Reservar</button>
-                  </form>
+                    <div class="tarjeta">
+                      <h2>Registrar una nueva reserva</h2>
+                      <form id="form-reserva">
+                        <div class="campos">
+                          <div class="campo">
+                            <label for="cliente">Nombre del cliente</label>
+                            <input type="text" id="cliente" name="cliente" placeholder="Ej: Ana Diaz">
+                          </div>
+                          <div class="campo">
+                            <label for="destino">Destino</label>
+                            <input type="text" id="destino" name="destino" placeholder="Ej: Torres del Paine">
+                          </div>
+                          <div class="campo">
+                            <label for="noches">Noches</label>
+                            <input type="number" id="noches" name="noches" value="3" min="1">
+                          </div>
+                          <div class="campo">
+                            <label for="personas">Personas</label>
+                            <input type="number" id="personas" name="personas" value="2" min="1" max="8">
+                          </div>
+                        </div>
+                        <button type="button" id="btn-reservar">Reservar</button>
+                      </form>
 
-                  <div id="mensaje"></div>
-                  <table id="tabla-reservas"><tbody id="cuerpo-tabla"></tbody></table>
+                      <div id="mensaje"></div>
+                      <table id="tabla-reservas"><tbody id="cuerpo-tabla"></tbody></table>
+                    </div>
+
+                    <p class="pie">
+                      Tarifa base $45.000 por noche y persona &middot; recargo 25%% en temporada alta
+                      &middot; descuento 10%% desde 7 noches &middot; maximo 8 personas
+                    </p>
+                  </div>
 
                   <script>
                     document.getElementById('btn-reservar').addEventListener('click', async () => {
@@ -221,13 +306,15 @@ public class ServidorReservas {
                         body: JSON.stringify(cuerpo)
                       });
                       const datos = await resp.json();
-                      document.getElementById('mensaje').textContent =
+                      const caja = document.getElementById('mensaje');
+                      caja.classList.toggle('error', !resp.ok);
+                      caja.textContent =
                         resp.ok ? 'Reserva confirmada: ' + datos.id : 'Error: ' + datos.error;
                     });
                   </script>
                 </body>
                 </html>
-                """.formatted(version, color);
+                """.formatted(colorEntorno, colorEntorno, colorEntorno, version, color);
 
         byte[] salida = html.getBytes(StandardCharsets.UTF_8);
         intercambio.getResponseHeaders().add("Content-Type", "text/html; charset=UTF-8");
