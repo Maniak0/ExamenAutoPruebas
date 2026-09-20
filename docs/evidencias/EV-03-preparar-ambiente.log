@@ -3,28 +3,25 @@
   Versión inicial en producción: 1.0.0
 ============================================================================
 
-[2026-09-20T19:18:38Z] ==> PASO 1/4 - Limpiando restos de ejecuciones anteriores
+[2026-09-20T20:09:33Z] ==> PASO 1/4 - Limpiando restos de ejecuciones anteriores
 
-[2026-09-20T19:18:38Z] ==> Limpiando el ambiente de pruebas
-[2026-09-20T19:18:39Z] Instancia 'verde' detenida (pid=1396)
-[2026-09-20T19:18:40Z] Instancia 'canary' detenida (pid=1817)
-[2026-09-20T19:18:41Z] Instancia 'router' detenida (pid=875)
-[2026-09-20T19:18:41Z] [  OK  ] Ambiente limpio: todos los puertos liberados
+[2026-09-20T20:09:33Z] ==> Limpiando el ambiente de pruebas
+[2026-09-20T20:09:33Z] [  OK  ] Ambiente limpio: todos los puertos liberados
 
-[2026-09-20T19:18:41Z] ==> PASO 2/4 - Verificando el artefacto desplegable
-[2026-09-20T19:18:41Z] [  OK  ] Artefacto localizado: /home/claude/proyecto-qa-reservas/target/reservas-automatizacion.jar
+[2026-09-20T20:09:33Z] ==> PASO 2/4 - Verificando el artefacto desplegable
+[2026-09-20T20:09:33Z] [  OK  ] Artefacto localizado: /home/claude/proyecto-qa-reservas/target/reservas-automatizacion.jar
 
-[2026-09-20T19:18:41Z] ==> PASO 3/4 - Desplegando el entorno azul (versión 1.0.0)
-[2026-09-20T19:18:41Z] Instancia 'azul' iniciada | puerto=9081 version=1.0.0 color=azul pid=3457
-[2026-09-20T19:18:42Z] [  OK  ] Health check de entorno azul superado en el intento 2 (puerto 9081)
+[2026-09-20T20:09:33Z] ==> PASO 3/4 - Desplegando el entorno azul (versión 1.0.0)
+[2026-09-20T20:09:33Z] Instancia 'azul' iniciada | puerto=9081 version=1.0.0 color=azul pid=1677
+[2026-09-20T20:09:34Z] [  OK  ] Health check de entorno azul superado en el intento 2 (puerto 9081)
 
-[2026-09-20T19:18:42Z] ==> PASO 4/4 - Levantando el balanceador en el puerto 9080
-[2026-09-20T19:18:42Z] Enrutamiento actualizado | primario=9081 canary=0 peso=0%
-[2026-09-20T19:18:44Z] Balanceador levantado en el puerto 9080
-[2026-09-20T19:18:44Z] [  OK  ] Health check de balanceador superado en el intento 1 (puerto 9080)
+[2026-09-20T20:09:34Z] ==> PASO 4/4 - Levantando el balanceador en el puerto 9080
+[2026-09-20T20:09:34Z] Enrutamiento actualizado | primario=9081 canary=0 peso=0%
+[2026-09-20T20:09:36Z] Balanceador levantado en el puerto 9080
+[2026-09-20T20:09:36Z] [  OK  ] Health check de balanceador superado en el intento 1 (puerto 9080)
 
-[2026-09-20T19:18:44Z] ==> Verificación del ambiente aprovisionado
-[2026-09-20T19:18:44Z] Respuesta del punto de entrada: {"version":"1.0.0","color":"azul"}
+[2026-09-20T20:09:36Z] ==> Verificación del ambiente aprovisionado
+[2026-09-20T20:09:36Z] Respuesta del punto de entrada: {"version":"1.0.0","color":"azul"}
 ----------------------------------------------------------------------
   SMOKE TESTS sobre http://localhost:9080
 ----------------------------------------------------------------------

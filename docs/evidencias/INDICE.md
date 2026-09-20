@@ -104,6 +104,25 @@ Inventario del ambiente tras completar todos los escenarios, ejecutado con `./in
 
 ---
 
+## Capturas del sistema en ejecución
+**Carpeta:** `capturas/`
+
+Imágenes tomadas del sistema real en funcionamiento, no maquetas ni montajes. El portal muestra en su cabecera un distintivo con la versión y el entorno que atiende la petición, lo que permite verificar visualmente el efecto de cada despliegue.
+
+| Archivo | Contenido |
+|---|---|
+| `cap-01-portal-v1.0.0-azul.png` | Estado inicial: versión 1.0.0 servida desde el entorno azul |
+| `cap-02-reserva-confirmada.png` | Reserva creada desde el portal, confirmada con su identificador |
+| `cap-03-health-up.png` | Health check de una instancia sana: HTTP 200 con estado UP |
+| `cap-04-portal-v1.1.0-verde.png` | Tras el switch Blue-Green: versión 1.1.0 en el entorno verde |
+| `cap-05-health-down-503.png` | Instancia defectuosa: HTTP 503 con estado DOWN y el motivo |
+| `cap-06-portal-tras-rollback.png` | Tras el rollback automático: versión estable restaurada |
+| `cap-07-version-tras-rollback.png` | Endpoint /version confirmando la versión restaurada |
+
+**Qué observar:** comparando `cap-01` con `cap-04` se aprecia la conmutación Blue-Green, ya que el distintivo pasa de azul a verde y la versión de 1.0.0 a 1.1.0 sin que la dirección de acceso cambie. La secuencia `cap-03` → `cap-05` → `cap-06` documenta el ciclo completo de detección del fallo y recuperación.
+
+---
+
 ## EV-11 — Bitácora de auditoría
 **Archivo:** `EV-11-bitacora-auditoria.log`
 
