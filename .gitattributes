@@ -1,0 +1,37 @@
+# =============================================================================
+#  Normalización de finales de línea
+# -----------------------------------------------------------------------------
+#  Problema que esto previene: al clonar en Windows, Git convierte por defecto
+#  los finales de línea a CRLF. Un script .sh con CRLF falla al ejecutarse en
+#  Linux con el error "/usr/bin/env: 'bash\r': No such file or directory",
+#  rompiendo el pipeline en los agentes de CI aunque el script sea correcto.
+#
+#  Forzar LF en los archivos ejecutables y de configuración garantiza que el
+#  MISMO contenido funcione en el equipo de desarrollo Windows y en los
+#  agentes Linux del pipeline.
+# =============================================================================
+
+# Detección automática por defecto
+*                   text=auto eol=lf
+
+# --- Deben conservar SIEMPRE finales de línea LF ---
+*.sh                text eol=lf
+*.yml               text eol=lf
+*.yaml              text eol=lf
+Jenkinsfile         text eol=lf
+Jenkinsfile.deploy  text eol=lf
+*.java              text eol=lf
+*.xml               text eol=lf
+*.feature           text eol=lf
+*.md                text eol=lf
+
+# --- Archivos específicos de Windows ---
+*.bat               text eol=crlf
+*.cmd               text eol=crlf
+*.ps1               text eol=crlf
+
+# --- Binarios: Git no debe tocarlos ---
+*.jar               binary
+*.png               binary
+*.jpg               binary
+*.pdf               binary

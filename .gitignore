@@ -1,0 +1,57 @@
+# ============================================================================
+#  Archivos que NO deben versionarse.
+#  Versionar artefactos generados rompe la reproducibilidad del build: el
+#  artefacto debe ser siempre el resultado del pipeline, nunca un binario
+#  subido a mano al repositorio.
+# ============================================================================
+
+# --- Artefactos de construcción Maven ---
+target/
+*.jar
+*.war
+*.class
+dependency-reduced-pom.xml
+
+# --- Reportes generados por las herramientas de prueba ---
+**/surefire-reports/
+**/failsafe-reports/
+**/jacoco.exec
+**/site/
+cucumber-report.*
+
+# --- Estado en tiempo de ejecución del pipeline de despliegue ---
+# Contiene PID y puertos de las instancias levantadas localmente.
+infra/estado/
+*.pid
+
+# --- Entornos de desarrollo ---
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.project
+.classpath
+nbproject/
+
+# --- Sistema operativo ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Registros locales ---
+*.log
+logs/
+
+# --- Secretos: JAMÁS deben llegar al repositorio ---
+# Las credenciales se gestionan en el servidor CI (Jenkins Credentials o
+# GitLab CI/CD Variables), nunca en texto plano dentro del código.
+.env
+*.pem
+*.key
+credenciales.properties
+
+# --- Excepción: las evidencias del trabajo SÍ se versionan ---
+!docs/evidencias/
+!docs/evidencias/**
