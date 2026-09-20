@@ -1,16 +1,21 @@
 ======================================================================
   EVIDENCIA EV-01 - HISTORIAL DE GITFLOW
   Repositorio: Sistema de Reservas Turísticas - IPLACEX
-  Generado: 2026-09-20T19:26:33Z
+  Generado: 2026-09-20T19:27:23Z
 ======================================================================
 
-----------------------------------------------------------------------
   1. GRAFO DE RAMAS, COMMITS Y MERGES
 ----------------------------------------------------------------------
-*   591c005 (develop) Merge branch 'release/1.0.0' into develop
+*   f9ca028 (develop) Merge branch 'main' into develop
 |\  
-| | *   e2aa19e (HEAD -> main, tag: v1.0.0) Merge branch 'release/1.0.0' into main
-| | |\  
+| * fa4d496 (HEAD -> main) docs: agregar guía de entrega y resolución de problemas frecuentes
+* | 9e90b51 Merge branch 'main' into develop
+|\| 
+| * 0587789 docs: incorporar la evidencia del historial GitFlow
+| *   e2aa19e (tag: v1.0.0) Merge branch 'release/1.0.0' into main
+| |\  
+* | \   591c005 Merge branch 'release/1.0.0' into develop
+|\ \ \  
 | | |/  
 | |/|   
 | * | 5ed815a (release/1.0.0) docs: incorporar las evidencias de ejecución real
@@ -56,20 +61,18 @@
 |/  
 * 5eccb7f chore: inicializar repositorio con .gitignore y normalización de fin de línea
 
-----------------------------------------------------------------------
   2. RAMAS DEL FLUJO GITFLOW
 ----------------------------------------------------------------------
-  develop                     591c005 Merge branch 'release/1.0.0' into develop
+  develop                     f9ca028 Merge branch 'main' into develop
   feature/deploy-workflow     f0975a5 ci: agregar workflow de despliegue en GitHub Actions
   feature/deployment-pipeline c29df66 ci: agregar el deployment pipeline con acceptance gate
   feature/estructura-maven    9e7ba56 feat: exponer la API REST y el portal web del sistema
   feature/pipeline-ci         0f4e320 ci: agregar workflow de GitHub Actions
   feature/pruebas-integracion 1014537 test: agregar la suite E2E del portal web con Selenium
   feature/pruebas-unitarias   fe5da2f test: agregar pruebas unitarias del servicio con Mockito
-* main                        e2aa19e Merge branch 'release/1.0.0' into main
+* main                        fa4d496 docs: agregar guía de entrega y resolución de problemas frecuentes
   release/1.0.0               5ed815a docs: incorporar las evidencias de ejecución real
 
-----------------------------------------------------------------------
   3. TAGS DE VERSIÓN
 ----------------------------------------------------------------------
 v1.0.0          Versión 1.0.0 - Actividades 1, 2 y 3 completas
@@ -78,12 +81,11 @@ v1.0.0          Versión 1.0.0 - Actividades 1, 2 y 3 completas
     pipeline de CI con pruebas unitarias y de integración, y deployment
     pipeline con acceptance gate, Blue-Green, Canary y rollback.
 
-----------------------------------------------------------------------
   4. RESUMEN
 ----------------------------------------------------------------------
-  Commits totales        : 29
-  Commits de merge (--no-ff): 8
-  Ramas feature/*        : 6
-  Ramas release/*        : 1
-  Tags                   : 1
-  Archivos versionados   : 49
+  Commits totales           : 33
+  Commits de merge (--no-ff): 10
+  Ramas feature/*           : 6
+  Ramas release/*           : 1
+  Tags                      : 1
+  Archivos versionados      : 51
