@@ -1,0 +1,73 @@
+============================================================================
+  DEPLOYMENT PIPELINE - ESTRATEGIA CANARY RELEASE
+  Versión candidata: 1.2.0
+  Escalones de tráfico: 10 25 50 100 %
+============================================================================
+
+[2026-09-20T19:18:52Z] ==> PASO 1/5 - Identificando la versión estable en producción
+[2026-09-20T19:18:52Z] Versión estable  : 1.1.0 (puerto 9082) - 100% del tráfico
+[2026-09-20T19:18:52Z] Versión canary   : 1.2.0 (puerto 9084) - aún sin tráfico
+
+[2026-09-20T19:18:52Z] ==> PASO 2/5 - Desplegando la instancia canary (peso 0%)
+[2026-09-20T19:18:52Z] Instancia 'canary' iniciada | puerto=9084 version=1.2.0 color=canary pid=3817
+[2026-09-20T19:18:53Z] [  OK  ] Health check de instancia canary superado en el intento 2 (puerto 9084)
+
+[2026-09-20T19:18:53Z] ==> PASO 3/5 - Smoke tests sobre la instancia canary
+----------------------------------------------------------------------
+  SMOKE TESTS sobre http://localhost:9084
+----------------------------------------------------------------------
+  [ OK ] El health check reporta la instancia como disponible
+  [ OK ] El portal web responde con código 200
+  [ OK ] La API de reservas responde con código 200
+  [ OK ] Se puede crear una reserva (flujo crítico)
+  [ OK ] La tarifa se calcula según la regla vigente
+  [ OK ] Los datos inválidos son rechazados con código 400
+----------------------------------------------------------------------
+  SMOKE TESTS SUPERADOS: 6/6 verificaciones correctas
+----------------------------------------------------------------------
+
+[2026-09-20T19:18:53Z] ==> PASO 4/5 - Incrementando el tráfico de forma progresiva
+
+[2026-09-20T19:18:53Z] --- Escalón: dirigiendo el 10% del tráfico al canary ---
+[2026-09-20T19:18:53Z] Enrutamiento actualizado | primario=9082 canary=9084 peso=10%
+[2026-09-20T19:18:57Z] Distribución medida sobre 200 peticiones: primario=186 canary=14 (7% al canary)
+[2026-09-20T19:18:57Z]   verificación 1/3: canary sano con 10% del tráfico
+[2026-09-20T19:18:58Z]   verificación 2/3: canary sano con 10% del tráfico
+[2026-09-20T19:18:59Z]   verificación 3/3: canary sano con 10% del tráfico
+[2026-09-20T19:19:00Z] [  OK  ] Escalón del 10% superado sin anomalías
+
+[2026-09-20T19:19:00Z] --- Escalón: dirigiendo el 25% del tráfico al canary ---
+[2026-09-20T19:19:00Z] Enrutamiento actualizado | primario=9082 canary=9084 peso=25%
+[2026-09-20T19:19:04Z] Distribución medida sobre 200 peticiones: primario=147 canary=53 (26% al canary)
+[2026-09-20T19:19:04Z]   verificación 1/3: canary sano con 25% del tráfico
+[2026-09-20T19:19:05Z]   verificación 2/3: canary sano con 25% del tráfico
+[2026-09-20T19:19:06Z]   verificación 3/3: canary sano con 25% del tráfico
+[2026-09-20T19:19:07Z] [  OK  ] Escalón del 25% superado sin anomalías
+
+[2026-09-20T19:19:07Z] --- Escalón: dirigiendo el 50% del tráfico al canary ---
+[2026-09-20T19:19:07Z] Enrutamiento actualizado | primario=9082 canary=9084 peso=50%
+[2026-09-20T19:19:10Z] Distribución medida sobre 200 peticiones: primario=106 canary=94 (47% al canary)
+[2026-09-20T19:19:10Z]   verificación 1/3: canary sano con 50% del tráfico
+[2026-09-20T19:19:11Z]   verificación 2/3: canary sano con 50% del tráfico
+[2026-09-20T19:19:12Z]   verificación 3/3: canary sano con 50% del tráfico
+[2026-09-20T19:19:13Z] [  OK  ] Escalón del 50% superado sin anomalías
+
+[2026-09-20T19:19:13Z] --- Escalón: dirigiendo el 100% del tráfico al canary ---
+[2026-09-20T19:19:13Z] Enrutamiento actualizado | primario=9082 canary=9084 peso=100%
+[2026-09-20T19:19:16Z] Distribución medida sobre 200 peticiones: primario=0 canary=200 (100% al canary)
+[2026-09-20T19:19:16Z]   verificación 1/3: canary sano con 100% del tráfico
+[2026-09-20T19:19:17Z]   verificación 2/3: canary sano con 100% del tráfico
+[2026-09-20T19:19:18Z]   verificación 3/3: canary sano con 100% del tráfico
+[2026-09-20T19:19:19Z] [  OK  ] Escalón del 100% superado sin anomalías
+
+[2026-09-20T19:19:19Z] ==> PASO 5/5 - Promoviendo el canary a versión estable
+[2026-09-20T19:19:19Z] Enrutamiento actualizado | primario=9084 canary=0 peso=0%
+[2026-09-20T19:19:20Z] El balanceador responde: {"version":"1.2.0","color":"canary"}
+[2026-09-20T19:19:20Z] [  OK  ] Promoción confirmada: 1.2.0 es ahora la versión estable
+
+============================================================================
+  RESULTADO: DESPLIEGUE CANARY EXITOSO
+  Versión promovida : 1.2.0
+  Versión anterior  : 1.1.0 (disponible para rollback)
+  Escalones         : 10 25 50 100 % completados sin anomalías
+============================================================================

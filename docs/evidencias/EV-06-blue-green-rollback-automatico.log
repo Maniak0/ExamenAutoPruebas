@@ -1,0 +1,63 @@
+============================================================================
+  DEPLOYMENT PIPELINE - ESTRATEGIA BLUE-GREEN
+  Versión candidata: 2.0.0
+============================================================================
+
+[2026-09-20T19:21:10Z] ==> PASO 1/6 - Identificando el entorno activo
+[2026-09-20T19:21:10Z] Entorno ACTIVO    : azul  (puerto 9081)  <- atiende usuarios
+[2026-09-20T19:21:10Z] Entorno CANDIDATO : verde (puerto 9082)  <- recibirá la versión nueva
+[2026-09-20T19:21:10Z] Versión actualmente en producción: 1.0.0
+
+[2026-09-20T19:21:10Z] ==> PASO 2/6 - Desplegando 2.0.0 en el entorno verde
+[2026-09-20T19:21:11Z] Instancia 'verde' detenida (pid=15830)
+[2026-09-20T19:21:11Z] Instancia 'verde' iniciada | puerto=9082 version=2.0.0 color=verde pid=16195
+
+[2026-09-20T19:21:11Z] ==> PASO 3/6 - Verificando la salud del entorno verde
+[2026-09-20T19:21:12Z] [  OK  ] Health check de entorno verde superado en el intento 2 (puerto 9082)
+
+[2026-09-20T19:21:12Z] ==> PASO 4/6 - Ejecutando smoke tests sobre el entorno verde
+----------------------------------------------------------------------
+  SMOKE TESTS sobre http://localhost:9082
+----------------------------------------------------------------------
+  [ OK ] El health check reporta la instancia como disponible
+  [ OK ] El portal web responde con código 200
+  [ OK ] La API de reservas responde con código 200
+  [ OK ] Se puede crear una reserva (flujo crítico)
+  [ OK ] La tarifa se calcula según la regla vigente
+  [ OK ] Los datos inválidos son rechazados con código 400
+----------------------------------------------------------------------
+  SMOKE TESTS SUPERADOS: 6/6 verificaciones correctas
+----------------------------------------------------------------------
+
+[2026-09-20T19:21:12Z] ==> PASO 5/6 - Conmutando el tráfico de azul a verde
+[2026-09-20T19:21:12Z] Enrutamiento actualizado | primario=9082 canary=0 peso=0%
+[2026-09-20T19:21:13Z] El balanceador ahora responde: {"version":"2.0.0","color":"verde"}
+[2026-09-20T19:21:13Z] [  OK  ] Switch completado sin downtime. La versión 2.0.0 atiende a los usuarios.
+[2026-09-20T19:21:13Z] El entorno azul (versión 1.0.0) queda en STAND-BY para rollback inmediato
+
+[2026-09-20T19:21:13Z] ==> PASO 6/6 - Monitoreando la versión 2.0.0 durante 12s
+[2026-09-20T19:21:13Z]   monitoreo t+1s: instancia sana
+[2026-09-20T19:21:14Z]   monitoreo t+2s: instancia sana
+[2026-09-20T19:21:15Z] [ALERTA]   monitoreo t+3s: HEALTH CHECK FALLIDO (1/2)
+[2026-09-20T19:21:16Z] [ALERTA]   monitoreo t+4s: HEALTH CHECK FALLIDO (2/2)
+
+[2026-09-20T19:21:16Z] [ERROR ] ================================================================
+[2026-09-20T19:21:16Z] [ERROR ]  DEGRADACIÓN CRÍTICA DETECTADA EN PRODUCCIÓN
+[2026-09-20T19:21:16Z] [ERROR ]  Versión afectada: 2.0.0 (entorno verde)
+[2026-09-20T19:21:16Z] [ERROR ] ================================================================
+
+[2026-09-20T19:21:16Z] ==> ROLLBACK AUTOMÁTICO - restaurando la versión 1.0.0
+[2026-09-20T19:21:16Z] Enrutamiento actualizado | primario=9081 canary=0 peso=0%
+[2026-09-20T19:21:17Z] [  OK  ] Tráfico devuelto al entorno azul (versión 1.0.0)
+[2026-09-20T19:21:17Z] Verificación post-rollback: {"version":"1.0.0","color":"azul"}
+[2026-09-20T19:21:18Z] Instancia 'verde' detenida (pid=16195)
+[2026-09-20T19:21:18Z] Instancia defectuosa verde retirada del ambiente
+[2026-09-20T19:21:18Z] [ALERTA] NOTIFICACIÓN -> canal #deploy-alerts: rollback automático ejecutado
+[2026-09-20T19:21:18Z] [ALERTA]   De  : 2.0.0 (fallida)
+[2026-09-20T19:21:18Z] [ALERTA]   A   : 1.0.0 (estable)
+[2026-09-20T19:21:18Z] [ALERTA]   Downtime para el usuario final: ninguno
+
+============================================================================
+  RESULTADO: ROLLBACK AUTOMÁTICO COMPLETADO
+  Producción sirviendo nuevamente la versión 1.0.0
+============================================================================

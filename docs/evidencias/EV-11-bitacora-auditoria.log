@@ -1,0 +1,201 @@
+[2026-09-20T19:18:38Z] ==> PASO 1/4 - Limpiando restos de ejecuciones anteriores
+[2026-09-20T19:18:38Z] ==> Limpiando el ambiente de pruebas
+[2026-09-20T19:18:39Z] Instancia 'verde' detenida (pid=1396)
+[2026-09-20T19:18:40Z] Instancia 'canary' detenida (pid=1817)
+[2026-09-20T19:18:41Z] Instancia 'router' detenida (pid=875)
+[2026-09-20T19:18:41Z] [  OK  ] Ambiente limpio: todos los puertos liberados
+[2026-09-20T19:18:41Z] ==> PASO 2/4 - Verificando el artefacto desplegable
+[2026-09-20T19:18:41Z] [  OK  ] Artefacto localizado: /home/claude/proyecto-qa-reservas/target/reservas-automatizacion.jar
+[2026-09-20T19:18:41Z] ==> PASO 3/4 - Desplegando el entorno azul (versión 1.0.0)
+[2026-09-20T19:18:41Z] Instancia 'azul' iniciada | puerto=9081 version=1.0.0 color=azul pid=3457
+[2026-09-20T19:18:42Z] [  OK  ] Health check de entorno azul superado en el intento 2 (puerto 9081)
+[2026-09-20T19:18:42Z] ==> PASO 4/4 - Levantando el balanceador en el puerto 9080
+[2026-09-20T19:18:42Z] Enrutamiento actualizado | primario=9081 canary=0 peso=0%
+[2026-09-20T19:18:44Z] Balanceador levantado en el puerto 9080
+[2026-09-20T19:18:44Z] [  OK  ] Health check de balanceador superado en el intento 1 (puerto 9080)
+[2026-09-20T19:18:44Z] ==> Verificación del ambiente aprovisionado
+[2026-09-20T19:18:44Z] Respuesta del punto de entrada: {"version":"1.0.0","color":"azul"}
+[2026-09-20T19:18:44Z] ==> PASO 1/6 - Identificando el entorno activo
+[2026-09-20T19:18:44Z] Entorno ACTIVO    : azul  (puerto 9081)  <- atiende usuarios
+[2026-09-20T19:18:44Z] Entorno CANDIDATO : verde (puerto 9082)  <- recibirá la versión nueva
+[2026-09-20T19:18:44Z] Versión actualmente en producción: 1.0.0
+[2026-09-20T19:18:44Z] ==> PASO 2/6 - Desplegando 1.1.0 en el entorno verde
+[2026-09-20T19:18:44Z] Instancia 'verde' iniciada | puerto=9082 version=1.1.0 color=verde pid=3631
+[2026-09-20T19:18:44Z] ==> PASO 3/6 - Verificando la salud del entorno verde
+[2026-09-20T19:18:46Z] [  OK  ] Health check de entorno verde superado en el intento 2 (puerto 9082)
+[2026-09-20T19:18:46Z] ==> PASO 4/6 - Ejecutando smoke tests sobre el entorno verde
+[2026-09-20T19:18:46Z] ==> PASO 5/6 - Conmutando el tráfico de azul a verde
+[2026-09-20T19:18:46Z] Enrutamiento actualizado | primario=9082 canary=0 peso=0%
+[2026-09-20T19:18:47Z] El balanceador ahora responde: {"version":"1.1.0","color":"verde"}
+[2026-09-20T19:18:47Z] [  OK  ] Switch completado sin downtime. La versión 1.1.0 atiende a los usuarios.
+[2026-09-20T19:18:47Z] El entorno azul (versión 1.0.0) queda en STAND-BY para rollback inmediato
+[2026-09-20T19:18:47Z] ==> PASO 6/6 - Monitoreando la versión 1.1.0 durante 5s
+[2026-09-20T19:18:47Z]   monitoreo t+1s: instancia sana
+[2026-09-20T19:18:48Z]   monitoreo t+2s: instancia sana
+[2026-09-20T19:18:49Z]   monitoreo t+3s: instancia sana
+[2026-09-20T19:18:50Z]   monitoreo t+4s: instancia sana
+[2026-09-20T19:18:51Z]   monitoreo t+5s: instancia sana
+[2026-09-20T19:18:52Z] [  OK  ] Ventana de monitoreo superada sin incidentes
+[2026-09-20T19:18:52Z] Registro de auditoría: /home/claude/proyecto-qa-reservas/infra/estado/historial-despliegues.log
+[2026-09-20T19:18:52Z] ==> PASO 1/5 - Identificando la versión estable en producción
+[2026-09-20T19:18:52Z] Versión estable  : 1.1.0 (puerto 9082) - 100% del tráfico
+[2026-09-20T19:18:52Z] Versión canary   : 1.2.0 (puerto 9084) - aún sin tráfico
+[2026-09-20T19:18:52Z] ==> PASO 2/5 - Desplegando la instancia canary (peso 0%)
+[2026-09-20T19:18:52Z] Instancia 'canary' iniciada | puerto=9084 version=1.2.0 color=canary pid=3817
+[2026-09-20T19:18:53Z] [  OK  ] Health check de instancia canary superado en el intento 2 (puerto 9084)
+[2026-09-20T19:18:53Z] ==> PASO 3/5 - Smoke tests sobre la instancia canary
+[2026-09-20T19:18:53Z] ==> PASO 4/5 - Incrementando el tráfico de forma progresiva
+[2026-09-20T19:18:53Z] --- Escalón: dirigiendo el 10% del tráfico al canary ---
+[2026-09-20T19:18:53Z] Enrutamiento actualizado | primario=9082 canary=9084 peso=10%
+[2026-09-20T19:18:57Z] Distribución medida sobre 200 peticiones: primario=186 canary=14 (7% al canary)
+[2026-09-20T19:18:57Z]   verificación 1/3: canary sano con 10% del tráfico
+[2026-09-20T19:18:58Z]   verificación 2/3: canary sano con 10% del tráfico
+[2026-09-20T19:18:59Z]   verificación 3/3: canary sano con 10% del tráfico
+[2026-09-20T19:19:00Z] [  OK  ] Escalón del 10% superado sin anomalías
+[2026-09-20T19:19:00Z] --- Escalón: dirigiendo el 25% del tráfico al canary ---
+[2026-09-20T19:19:00Z] Enrutamiento actualizado | primario=9082 canary=9084 peso=25%
+[2026-09-20T19:19:04Z] Distribución medida sobre 200 peticiones: primario=147 canary=53 (26% al canary)
+[2026-09-20T19:19:04Z]   verificación 1/3: canary sano con 25% del tráfico
+[2026-09-20T19:19:05Z]   verificación 2/3: canary sano con 25% del tráfico
+[2026-09-20T19:19:06Z]   verificación 3/3: canary sano con 25% del tráfico
+[2026-09-20T19:19:07Z] [  OK  ] Escalón del 25% superado sin anomalías
+[2026-09-20T19:19:07Z] --- Escalón: dirigiendo el 50% del tráfico al canary ---
+[2026-09-20T19:19:07Z] Enrutamiento actualizado | primario=9082 canary=9084 peso=50%
+[2026-09-20T19:19:10Z] Distribución medida sobre 200 peticiones: primario=106 canary=94 (47% al canary)
+[2026-09-20T19:19:10Z]   verificación 1/3: canary sano con 50% del tráfico
+[2026-09-20T19:19:11Z]   verificación 2/3: canary sano con 50% del tráfico
+[2026-09-20T19:19:12Z]   verificación 3/3: canary sano con 50% del tráfico
+[2026-09-20T19:19:13Z] [  OK  ] Escalón del 50% superado sin anomalías
+[2026-09-20T19:19:13Z] --- Escalón: dirigiendo el 100% del tráfico al canary ---
+[2026-09-20T19:19:13Z] Enrutamiento actualizado | primario=9082 canary=9084 peso=100%
+[2026-09-20T19:19:16Z] Distribución medida sobre 200 peticiones: primario=0 canary=200 (100% al canary)
+[2026-09-20T19:19:16Z]   verificación 1/3: canary sano con 100% del tráfico
+[2026-09-20T19:19:17Z]   verificación 2/3: canary sano con 100% del tráfico
+[2026-09-20T19:19:18Z]   verificación 3/3: canary sano con 100% del tráfico
+[2026-09-20T19:19:19Z] [  OK  ] Escalón del 100% superado sin anomalías
+[2026-09-20T19:19:19Z] ==> PASO 5/5 - Promoviendo el canary a versión estable
+[2026-09-20T19:19:19Z] Enrutamiento actualizado | primario=9084 canary=0 peso=0%
+[2026-09-20T19:19:20Z] El balanceador responde: {"version":"1.2.0","color":"canary"}
+[2026-09-20T19:19:20Z] [  OK  ] Promoción confirmada: 1.2.0 es ahora la versión estable
+[2026-09-20T19:19:30Z] ==> PASO 1/4 - Limpiando restos de ejecuciones anteriores
+[2026-09-20T19:19:30Z] ==> Limpiando el ambiente de pruebas
+[2026-09-20T19:19:31Z] Instancia 'azul' detenida (pid=3457)
+[2026-09-20T19:19:32Z] Instancia 'verde' detenida (pid=3631)
+[2026-09-20T19:19:33Z] Instancia 'canary' detenida (pid=3817)
+[2026-09-20T19:19:34Z] Instancia 'router' detenida (pid=3504)
+[2026-09-20T19:19:34Z] [  OK  ] Ambiente limpio: todos los puertos liberados
+[2026-09-20T19:19:34Z] ==> PASO 2/4 - Verificando el artefacto desplegable
+[2026-09-20T19:19:34Z] [  OK  ] Artefacto localizado: /home/claude/proyecto-qa-reservas/target/reservas-automatizacion.jar
+[2026-09-20T19:19:34Z] ==> PASO 3/4 - Desplegando el entorno azul (versión 1.0.0)
+[2026-09-20T19:19:34Z] Instancia 'azul' iniciada | puerto=9081 version=1.0.0 color=azul pid=10612
+[2026-09-20T19:19:35Z] [  OK  ] Health check de entorno azul superado en el intento 2 (puerto 9081)
+[2026-09-20T19:19:35Z] ==> PASO 4/4 - Levantando el balanceador en el puerto 9080
+[2026-09-20T19:19:35Z] Enrutamiento actualizado | primario=9081 canary=0 peso=0%
+[2026-09-20T19:19:37Z] Balanceador levantado en el puerto 9080
+[2026-09-20T19:19:38Z] [  OK  ] Health check de balanceador superado en el intento 1 (puerto 9080)
+[2026-09-20T19:19:38Z] ==> Verificación del ambiente aprovisionado
+[2026-09-20T19:19:38Z] Respuesta del punto de entrada: {"version":"1.0.0","color":"azul"}
+[2026-09-20T19:19:38Z] ==> PASO 1/5 - Identificando la versión estable en producción
+[2026-09-20T19:19:38Z] Versión estable  : 1.0.0 (puerto 9081) - 100% del tráfico
+[2026-09-20T19:19:38Z] Versión canary   : 3.0.0 (puerto 9084) - aún sin tráfico
+[2026-09-20T19:19:38Z] ==> PASO 2/5 - Desplegando la instancia canary (peso 0%)
+[2026-09-20T19:19:38Z] Instancia 'canary' iniciada | puerto=9084 version=3.0.0 color=canary pid=10783
+[2026-09-20T19:19:39Z] [  OK  ] Health check de instancia canary superado en el intento 2 (puerto 9084)
+[2026-09-20T19:19:39Z] ==> PASO 3/5 - Smoke tests sobre la instancia canary
+[2026-09-20T19:19:39Z] ==> PASO 4/5 - Incrementando el tráfico de forma progresiva
+[2026-09-20T19:19:39Z] --- Escalón: dirigiendo el 10% del tráfico al canary ---
+[2026-09-20T19:19:39Z] Enrutamiento actualizado | primario=9081 canary=9084 peso=10%
+[2026-09-20T19:19:43Z] Distribución medida sobre 200 peticiones: primario=186 canary=14 (7% al canary)
+[2026-09-20T19:19:43Z]   verificación 1/3: canary sano con 10% del tráfico
+[2026-09-20T19:19:44Z]   verificación 2/3: canary sano con 10% del tráfico
+[2026-09-20T19:19:45Z]   verificación 3/3: canary sano con 10% del tráfico
+[2026-09-20T19:19:46Z] [  OK  ] Escalón del 10% superado sin anomalías
+[2026-09-20T19:19:46Z] --- Escalón: dirigiendo el 25% del tráfico al canary ---
+[2026-09-20T19:19:46Z] Enrutamiento actualizado | primario=9081 canary=9084 peso=25%
+[2026-09-20T19:19:49Z] Distribución medida sobre 200 peticiones: primario=152 canary=48 (24% al canary)
+[2026-09-20T19:19:49Z] [ALERTA]   verificación 1/3: ANOMALÍA DETECTADA en el canary
+[2026-09-20T19:19:49Z] [ERROR ] ================================================================
+[2026-09-20T19:19:49Z] [ERROR ]  ANOMALÍA EN EL CANARY CON 25% DEL TRÁFICO
+[2026-09-20T19:19:49Z] [ERROR ]  Versión afectada: 3.0.0
+[2026-09-20T19:19:49Z] [ERROR ] ================================================================
+[2026-09-20T19:19:49Z] ==> ROLLBACK PARCIAL - retirando el canary del enrutamiento
+[2026-09-20T19:19:49Z] Enrutamiento actualizado | primario=9081 canary=0 peso=0%
+[2026-09-20T19:19:53Z] Distribución medida sobre 200 peticiones: primario=200 canary=0 (0% al canary)
+[2026-09-20T19:19:53Z] [  OK  ] Confirmado: el 100% del tráfico vuelve a la versión estable 1.0.0
+[2026-09-20T19:19:54Z] Instancia 'canary' detenida (pid=10783)
+[2026-09-20T19:19:54Z] Instancia canary retirada del ambiente
+[2026-09-20T19:19:54Z] [ALERTA] NOTIFICACIÓN -> canal #deploy-alerts: rollback parcial ejecutado
+[2026-09-20T19:19:54Z] [ALERTA]   Usuarios afectados: solo el 25% durante la ventana de detección
+[2026-09-20T19:19:54Z] [ALERTA]   Versión vigente   : 1.0.0
+[2026-09-20T19:19:59Z] ==> PASO 1/6 - Identificando el entorno activo
+[2026-09-20T19:19:59Z] Entorno ACTIVO    : azul  (puerto 9081)  <- atiende usuarios
+[2026-09-20T19:19:59Z] Entorno CANDIDATO : verde (puerto 9082)  <- recibirá la versión nueva
+[2026-09-20T19:19:59Z] Versión actualmente en producción: 1.0.0
+[2026-09-20T19:19:59Z] ==> PASO 2/6 - Desplegando 1.1.0 en el entorno verde
+[2026-09-20T19:19:59Z] Instancia 'verde' iniciada | puerto=9082 version=1.1.0 color=verde pid=15830
+[2026-09-20T19:19:59Z] ==> PASO 3/6 - Verificando la salud del entorno verde
+[2026-09-20T19:20:00Z] [  OK  ] Health check de entorno verde superado en el intento 2 (puerto 9082)
+[2026-09-20T19:20:00Z] ==> PASO 4/6 - Ejecutando smoke tests sobre el entorno verde
+[2026-09-20T19:20:00Z] ==> PASO 5/6 - Conmutando el tráfico de azul a verde
+[2026-09-20T19:20:00Z] Enrutamiento actualizado | primario=9082 canary=0 peso=0%
+[2026-09-20T19:20:01Z] El balanceador ahora responde: {"version":"1.1.0","color":"verde"}
+[2026-09-20T19:20:01Z] [  OK  ] Switch completado sin downtime. La versión 1.1.0 atiende a los usuarios.
+[2026-09-20T19:20:01Z] El entorno azul (versión 1.0.0) queda en STAND-BY para rollback inmediato
+[2026-09-20T19:20:01Z] ==> PASO 6/6 - Monitoreando la versión 1.1.0 durante 3s
+[2026-09-20T19:20:01Z]   monitoreo t+1s: instancia sana
+[2026-09-20T19:20:02Z]   monitoreo t+2s: instancia sana
+[2026-09-20T19:20:03Z]   monitoreo t+3s: instancia sana
+[2026-09-20T19:20:04Z] [  OK  ] Ventana de monitoreo superada sin incidentes
+[2026-09-20T19:20:04Z] Registro de auditoría: /home/claude/proyecto-qa-reservas/infra/estado/historial-despliegues.log
+[2026-09-20T19:20:04Z] ==> Inventario del ambiente
+[2026-09-20T19:20:04Z] ==> Determinando el destino del rollback
+[2026-09-20T19:20:04Z] Versión que atiende actualmente: 1.1.0 (puerto 9082)
+[2026-09-20T19:20:04Z] Destino seleccionado automáticamente: entorno en stand-by (puerto 9081)
+[2026-09-20T19:20:04Z] ==> Validando la salud del destino antes de conmutar
+[2026-09-20T19:20:04Z] [  OK  ] Destino sano y disponible: versión 1.0.0
+[2026-09-20T19:20:04Z] ==> Ejecutando el rollback
+[2026-09-20T19:20:04Z] Enrutamiento actualizado | primario=9081 canary=0 peso=0%
+[2026-09-20T19:20:05Z] El balanceador responde ahora: {"version":"1.0.0","color":"azul"}
+[2026-09-20T19:20:05Z] [  OK  ] ROLLBACK COMPLETADO: producción sirve la versión 1.0.0
+[2026-09-20T19:20:05Z] ==> Verificación funcional posterior al rollback
+[2026-09-20T19:20:05Z] [  OK  ] Los flujos críticos operan correctamente tras el rollback
+[2026-09-20T19:20:05Z] [ALERTA] NOTIFICACIÓN -> canal #deploy-alerts: rollback manual ejecutado
+[2026-09-20T19:20:05Z] [ALERTA]   De : 1.1.0
+[2026-09-20T19:20:05Z] [ALERTA]   A  : 1.0.0
+[2026-09-20T19:20:05Z] [ALERTA]   Operador: pipeline
+[2026-09-20T19:21:10Z] ==> PASO 1/6 - Identificando el entorno activo
+[2026-09-20T19:21:10Z] Entorno ACTIVO    : azul  (puerto 9081)  <- atiende usuarios
+[2026-09-20T19:21:10Z] Entorno CANDIDATO : verde (puerto 9082)  <- recibirá la versión nueva
+[2026-09-20T19:21:10Z] Versión actualmente en producción: 1.0.0
+[2026-09-20T19:21:10Z] ==> PASO 2/6 - Desplegando 2.0.0 en el entorno verde
+[2026-09-20T19:21:11Z] Instancia 'verde' detenida (pid=15830)
+[2026-09-20T19:21:11Z] Instancia 'verde' iniciada | puerto=9082 version=2.0.0 color=verde pid=16195
+[2026-09-20T19:21:11Z] ==> PASO 3/6 - Verificando la salud del entorno verde
+[2026-09-20T19:21:12Z] [  OK  ] Health check de entorno verde superado en el intento 2 (puerto 9082)
+[2026-09-20T19:21:12Z] ==> PASO 4/6 - Ejecutando smoke tests sobre el entorno verde
+[2026-09-20T19:21:12Z] ==> PASO 5/6 - Conmutando el tráfico de azul a verde
+[2026-09-20T19:21:12Z] Enrutamiento actualizado | primario=9082 canary=0 peso=0%
+[2026-09-20T19:21:13Z] El balanceador ahora responde: {"version":"2.0.0","color":"verde"}
+[2026-09-20T19:21:13Z] [  OK  ] Switch completado sin downtime. La versión 2.0.0 atiende a los usuarios.
+[2026-09-20T19:21:13Z] El entorno azul (versión 1.0.0) queda en STAND-BY para rollback inmediato
+[2026-09-20T19:21:13Z] ==> PASO 6/6 - Monitoreando la versión 2.0.0 durante 12s
+[2026-09-20T19:21:13Z]   monitoreo t+1s: instancia sana
+[2026-09-20T19:21:14Z]   monitoreo t+2s: instancia sana
+[2026-09-20T19:21:15Z] [ALERTA]   monitoreo t+3s: HEALTH CHECK FALLIDO (1/2)
+[2026-09-20T19:21:16Z] [ALERTA]   monitoreo t+4s: HEALTH CHECK FALLIDO (2/2)
+[2026-09-20T19:21:16Z] [ERROR ] ================================================================
+[2026-09-20T19:21:16Z] [ERROR ]  DEGRADACIÓN CRÍTICA DETECTADA EN PRODUCCIÓN
+[2026-09-20T19:21:16Z] [ERROR ]  Versión afectada: 2.0.0 (entorno verde)
+[2026-09-20T19:21:16Z] [ERROR ] ================================================================
+[2026-09-20T19:21:16Z] ==> ROLLBACK AUTOMÁTICO - restaurando la versión 1.0.0
+[2026-09-20T19:21:16Z] Enrutamiento actualizado | primario=9081 canary=0 peso=0%
+[2026-09-20T19:21:17Z] [  OK  ] Tráfico devuelto al entorno azul (versión 1.0.0)
+[2026-09-20T19:21:17Z] Verificación post-rollback: {"version":"1.0.0","color":"azul"}
+[2026-09-20T19:21:18Z] Instancia 'verde' detenida (pid=16195)
+[2026-09-20T19:21:18Z] Instancia defectuosa verde retirada del ambiente
+[2026-09-20T19:21:18Z] [ALERTA] NOTIFICACIÓN -> canal #deploy-alerts: rollback automático ejecutado
+[2026-09-20T19:21:18Z] [ALERTA]   De  : 2.0.0 (fallida)
+[2026-09-20T19:21:18Z] [ALERTA]   A   : 1.0.0 (estable)
+[2026-09-20T19:21:18Z] [ALERTA]   Downtime para el usuario final: ninguno
+[2026-09-20T19:21:22Z] ==> Inventario del ambiente
+[2026-09-20T19:21:22Z] Consulta de estado finalizada. No se realizaron cambios.

@@ -1,0 +1,50 @@
+============================================================================
+  APROVISIONAMIENTO DEL AMBIENTE DE PRUEBAS
+  Versión inicial en producción: 1.0.0
+============================================================================
+
+[2026-09-20T19:18:38Z] ==> PASO 1/4 - Limpiando restos de ejecuciones anteriores
+
+[2026-09-20T19:18:38Z] ==> Limpiando el ambiente de pruebas
+[2026-09-20T19:18:39Z] Instancia 'verde' detenida (pid=1396)
+[2026-09-20T19:18:40Z] Instancia 'canary' detenida (pid=1817)
+[2026-09-20T19:18:41Z] Instancia 'router' detenida (pid=875)
+[2026-09-20T19:18:41Z] [  OK  ] Ambiente limpio: todos los puertos liberados
+
+[2026-09-20T19:18:41Z] ==> PASO 2/4 - Verificando el artefacto desplegable
+[2026-09-20T19:18:41Z] [  OK  ] Artefacto localizado: /home/claude/proyecto-qa-reservas/target/reservas-automatizacion.jar
+
+[2026-09-20T19:18:41Z] ==> PASO 3/4 - Desplegando el entorno azul (versión 1.0.0)
+[2026-09-20T19:18:41Z] Instancia 'azul' iniciada | puerto=9081 version=1.0.0 color=azul pid=3457
+[2026-09-20T19:18:42Z] [  OK  ] Health check de entorno azul superado en el intento 2 (puerto 9081)
+
+[2026-09-20T19:18:42Z] ==> PASO 4/4 - Levantando el balanceador en el puerto 9080
+[2026-09-20T19:18:42Z] Enrutamiento actualizado | primario=9081 canary=0 peso=0%
+[2026-09-20T19:18:44Z] Balanceador levantado en el puerto 9080
+[2026-09-20T19:18:44Z] [  OK  ] Health check de balanceador superado en el intento 1 (puerto 9080)
+
+[2026-09-20T19:18:44Z] ==> Verificación del ambiente aprovisionado
+[2026-09-20T19:18:44Z] Respuesta del punto de entrada: {"version":"1.0.0","color":"azul"}
+----------------------------------------------------------------------
+  SMOKE TESTS sobre http://localhost:9080
+----------------------------------------------------------------------
+  [ OK ] El health check reporta la instancia como disponible
+  [ OK ] El portal web responde con código 200
+  [ OK ] La API de reservas responde con código 200
+  [ OK ] Se puede crear una reserva (flujo crítico)
+  [ OK ] La tarifa se calcula según la regla vigente
+  [ OK ] Los datos inválidos son rechazados con código 400
+----------------------------------------------------------------------
+  SMOKE TESTS SUPERADOS: 6/6 verificaciones correctas
+----------------------------------------------------------------------
+
+============================================================================
+  AMBIENTE LISTO
+    Punto de entrada estable : http://localhost:9080
+    Entorno azul  (activo)   : http://localhost:9081   v1.0.0
+    Entorno verde (libre)    : puerto 9082
+    Bitácora de auditoría    : /home/claude/proyecto-qa-reservas/infra/estado/historial-despliegues.log
+
+  Siguiente paso sugerido:
+    ./infra/deploy-blue-green.sh --version 1.1.0
+============================================================================

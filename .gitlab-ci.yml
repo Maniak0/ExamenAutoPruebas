@@ -1,0 +1,146 @@
+# =============================================================================
+#  ACTIVIDAD 2 - PIPELINE DE INTEGRACIÓN CONTINUA (equivalente en GitLab CI/CD)
+#  Sistema de Reservas Turísticas - IPLACEX
+# -----------------------------------------------------------------------------
+#  Implementa las mismas etapas que el Jenkinsfile, demostrando que un pipeline
+#  bien diseñado es portable entre servidores de CI porque describe el PROCESO,
+#  no la herramienta.
+#
+#  Cada job se ejecuta en un contenedor efímero recién provisionado, lo que
+#  garantiza entornos limpios y resultados reproducibles (ME_5 §1.2.2).
+# =============================================================================
+
+# Imagen versionada explícitamente: nunca se usa 'latest', porque una etiqueta
+# móvil rompe el determinismo del build (ME_3 §2.6).
+image: maven:3.9.6-eclipse-temurin-17
+
+stages:
+  - build
+  - pruebas
+  - calidad
+  - empaquetado
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Xmx1024m"
+  MAVEN_CLI_OPTS: "-B --no-transfer-progress"
+  APP_NOMBRE: "reservas-automatizacion"
+
+# Caché de dependencias: acelera los builds sin contaminar el entorno,
+# ya que el contenedor sigue siendo efímero.
+cache:
+  key:
+    files:
+      - pom.xml
+  paths:
+    - .m2/repository
+
+# -----------------------------------------------------------------------------
+# ETAPA 1: BUILD - compilación rápida (fail fast)
+# -----------------------------------------------------------------------------
+compilar:
+  stage: build
+  script:
+    - echo "==> Compilando el proyecto sin ejecutar pruebas"
+    - mvn $MAVEN_CLI_OPTS clean compile -DskipTests
+  artifacts:
+    # Las clases compiladas se pasan a los jobs siguientes para no recompilar
+    paths:
+      - target/classes
+    expire_in: 1 hour
+
+# -----------------------------------------------------------------------------
+# ETAPA 2: PRUEBAS UNITARIAS (tipo de prueba 1 de 2)
+# -----------------------------------------------------------------------------
+pruebas-unitarias:
+  stage: pruebas
+  needs: ["compilar"]
+  script:
+    - echo "==> Ejecutando pruebas unitarias (JUnit 5 + Mockito)"
+    - mvn $MAVEN_CLI_OPTS test
+  artifacts:
+    when: always          # Publica el reporte incluso cuando las pruebas fallan
+    expire_in: 1 week
+    paths:
+      - target/surefire-reports/
+    reports:
+      junit:
+        - target/surefire-reports/TEST-*.xml
+
+# -----------------------------------------------------------------------------
+# ETAPA 3: PRUEBAS DE INTEGRACIÓN (tipo de prueba 2 de 2)
+# -----------------------------------------------------------------------------
+# Se declara en la misma etapa que las unitarias para que ambos jobs corran en
+# PARALELO en runners distintos, reduciendo el tiempo total del pipeline
+# (paralelización inteligente, ME_5 §1.2.2).
+pruebas-integracion:
+  stage: pruebas
+  needs: ["compilar"]
+  script:
+    - echo "==> Ejecutando pruebas de integración y aceptación (Failsafe)"
+    - mvn $MAVEN_CLI_OPTS verify
+  artifacts:
+    when: always
+    expire_in: 1 week
+    paths:
+      - target/failsafe-reports/
+      - target/cucumber-report.html
+    reports:
+      junit:
+        - target/failsafe-reports/TEST-*.xml
+
+# -----------------------------------------------------------------------------
+# ETAPA 4: QUALITY GATE - umbral de cobertura que detiene el pipeline
+# -----------------------------------------------------------------------------
+quality-gate-cobertura:
+  stage: calidad
+  needs: ["pruebas-unitarias", "pruebas-integracion"]
+  script:
+    - echo "==> Verificando el umbral mínimo de cobertura (80%)"
+    - mvn $MAVEN_CLI_OPTS verify jacoco:report jacoco:check
+    # Expone el porcentaje en la interfaz de GitLab
+    - awk -F'[<>]' '/<counter type="LINE"/ {print}' target/site/jacoco/jacoco.xml | tail -1
+  coverage: '/Total.*?([0-9]{1,3})%/'
+  artifacts:
+    when: always
+    expire_in: 1 month
+    paths:
+      - target/site/jacoco/
+    reports:
+      coverage_report:
+        coverage_format: jacoco
+        path: target/site/jacoco/jacoco.xml
+
+# -----------------------------------------------------------------------------
+# ETAPA 5: EMPAQUETADO - artefacto versionado y trazable
+# -----------------------------------------------------------------------------
+empaquetar:
+  stage: empaquetado
+  needs: ["quality-gate-cobertura"]
+  script:
+    - echo "==> Generando el artefacto desplegable"
+    - mvn $MAVEN_CLI_OPTS package -DskipTests
+    # Metadatos de auditoría exigidos para la trazabilidad (ME_6 §5.3)
+    - |
+      cat > target/build-metadata.json <<EOF
+      {
+        "artefacto":   "$APP_NOMBRE",
+        "version":     "1.0.$CI_PIPELINE_IID",
+        "pipeline":    "$CI_PIPELINE_ID",
+        "commit":      "$CI_COMMIT_SHORT_SHA",
+        "rama":        "$CI_COMMIT_REF_NAME",
+        "autor":       "$GITLAB_USER_LOGIN",
+        "marcaTiempo": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+      }
+      EOF
+    - cat target/build-metadata.json
+  artifacts:
+    name: "$APP_NOMBRE-$CI_COMMIT_SHORT_SHA"
+    expire_in: 3 months
+    paths:
+      - target/*.jar
+      - target/build-metadata.json
+  rules:
+    # Solo se empaqueta desde las ramas integradoras del flujo GitFlow:
+    # no tiene sentido publicar artefactos de cada rama feature.
+    - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "develop"'
+    - if: '$CI_COMMIT_BRANCH =~ /^release\/.*/'

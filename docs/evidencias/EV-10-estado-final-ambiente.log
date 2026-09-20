@@ -1,0 +1,11 @@
+============================================================================
+  ROLLBACK MANUAL ASISTIDO
+============================================================================
+
+[2026-09-20T19:21:22Z] ==> Inventario del ambiente
+
+  azul       puerto 9081   version 1.0.0      sana        <== RECIBE EL TRÁFICO
+  verde      puerto 9082   [ detenida ]
+  canary     puerto 9084   [ detenida ]
+
+[2026-09-20T19:21:22Z] Consulta de estado finalizada. No se realizaron cambios.
