@@ -4,15 +4,15 @@
   Ambiente         : staging (puerto 9083)
 ============================================================================
 
-[2026-09-20T19:17:27Z] ==> PASO 1/4 - Desplegando la versión 1.1.0 en staging
-[2026-09-20T19:17:27Z] Instancia 'staging' iniciada | puerto=9083 version=1.1.0 color=staging pid=1249
+[2026-09-20T20:09:40Z] ==> PASO 1/4 - Desplegando la versión 1.1.0 en staging
+[2026-09-20T20:09:40Z] Instancia 'staging' iniciada | puerto=9083 version=1.1.0 color=staging pid=1967
 
-[2026-09-20T19:17:27Z] ==> PASO 2/4 - Esperando a que staging quede operativo
-[2026-09-20T19:17:28Z] [  OK  ] Health check de staging superado en el intento 2 (puerto 9083)
+[2026-09-20T20:09:41Z] ==> PASO 2/4 - Esperando a que staging quede operativo
+[2026-09-20T20:09:42Z] [  OK  ] Health check de staging superado en el intento 2 (puerto 9083)
 
-[2026-09-20T19:17:28Z] ==> PASO 3/4 - Ejecutando las pruebas de aceptación contra staging
-[2026-09-20T19:17:28Z] [ALERTA] Ejecución forzada sin Maven (--sin-maven)
-[2026-09-20T19:17:28Z] Ejecutando la verificación de aceptación equivalente vía HTTP
+[2026-09-20T20:09:42Z] ==> PASO 3/4 - Ejecutando las pruebas de aceptación contra staging
+[2026-09-20T20:09:42Z] [ALERTA] Ejecución forzada sin Maven (--sin-maven)
+[2026-09-20T20:09:42Z] Ejecutando la verificación de aceptación equivalente vía HTTP
 ======================================================================
   SUITE DE ACEPTACIÓN - criterios de negocio sobre http://localhost:9083
 ======================================================================
@@ -46,12 +46,12 @@
 ======================================================================
   ACEPTACIÓN SUPERADA: 14/14 criterios de negocio cumplidos
 ======================================================================
-[2026-09-20T19:17:28Z] [  OK  ] Verificación de aceptación SUPERADA
+[2026-09-20T20:09:42Z] [  OK  ] Verificación de aceptación SUPERADA
 
-[2026-09-20T19:17:28Z] ==> PASO 4/4 - Decisión del gate
-[2026-09-20T19:17:29Z] Instancia 'staging' detenida (pid=1249)
-[2026-09-20T19:17:29Z] Ambiente de staging liberado
-[2026-09-20T19:17:29Z] [  OK  ] GATE SUPERADO: la versión 1.1.0 queda habilitada para producción
+[2026-09-20T20:09:42Z] ==> PASO 4/4 - Decisión del gate
+[2026-09-20T20:09:43Z] Instancia 'staging' detenida (pid=1967)
+[2026-09-20T20:09:43Z] Ambiente de staging liberado
+[2026-09-20T20:09:43Z] [  OK  ] GATE SUPERADO: la versión 1.1.0 queda habilitada para producción
 
 ============================================================================
   ACCEPTANCE GATE: APROBADO

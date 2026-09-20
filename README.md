@@ -356,6 +356,7 @@ Los registros de las ejecuciones reales están en **`docs/evidencias/`**:
 | `EV-09-rollback-manual.log` | Rollback manual asistido |
 | `EV-10-estado-final-ambiente.log` | Inventario final del ambiente |
 | `EV-11-bitacora-auditoria.log` | Bitácora completa de auditoría |
+| `capturas/` | Siete capturas del sistema en ejecución, incluidos el switch Blue-Green y el rollback |
 
 Consulte `docs/evidencias/INDICE.md` para la lectura comentada de cada evidencia.
 
