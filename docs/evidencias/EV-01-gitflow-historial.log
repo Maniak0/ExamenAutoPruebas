@@ -1,0 +1,89 @@
+======================================================================
+  EVIDENCIA EV-01 - HISTORIAL DE GITFLOW
+  Repositorio: Sistema de Reservas Turísticas - IPLACEX
+  Generado: 2026-09-20T19:26:33Z
+======================================================================
+
+----------------------------------------------------------------------
+  1. GRAFO DE RAMAS, COMMITS Y MERGES
+----------------------------------------------------------------------
+*   591c005 (develop) Merge branch 'release/1.0.0' into develop
+|\  
+| | *   e2aa19e (HEAD -> main, tag: v1.0.0) Merge branch 'release/1.0.0' into main
+| | |\  
+| | |/  
+| |/|   
+| * | 5ed815a (release/1.0.0) docs: incorporar las evidencias de ejecución real
+| * | 943ae05 docs: agregar README y estrategia de pruebas
+|/ /  
+* |   05101d0 Merge branch 'feature/deploy-workflow' into develop
+|\ \  
+| * | f0975a5 (feature/deploy-workflow) ci: agregar workflow de despliegue en GitHub Actions
+|/ /  
+* |   1ece02e Merge branch 'feature/deployment-pipeline' into develop
+|\ \  
+| * | c29df66 (feature/deployment-pipeline) ci: agregar el deployment pipeline con acceptance gate
+| * | a70e843 feat(infra): agregar acceptance gate, smoke tests y rollback manual
+| * | 1839f0e feat(infra): implementar despliegue Canary progresivo
+| * | 882a00a feat(infra): implementar despliegue Blue-Green con rollback automático
+| * | 9c2352c feat(infra): agregar balanceador y librería común de despliegue
+|/ /  
+* |   31e6307 Merge branch 'feature/pipeline-ci' into develop
+|\ \  
+| * | 0f4e320 (feature/pipeline-ci) ci: agregar workflow de GitHub Actions
+| * | 3f15e53 ci: agregar el pipeline equivalente para GitLab CI/CD
+| * | 8491aa8 ci: agregar pipeline de integración continua en Jenkins
+|/ /  
+* |   38c2e8c Merge branch 'feature/pruebas-integracion' into develop
+|\ \  
+| * | 1014537 (feature/pruebas-integracion) test: agregar la suite E2E del portal web con Selenium
+| * | cae7b32 test: agregar pruebas de aceptación y escenarios BDD en Gherkin
+| * | bd643bc test: agregar pruebas de integración de la API REST
+| * | b3105da test: agregar el soporte común de las pruebas
+|/ /  
+* |   7f37194 Merge branch 'feature/pruebas-unitarias' into develop
+|\ \  
+| * | fe5da2f (feature/pruebas-unitarias) test: agregar pruebas unitarias del servicio con Mockito
+| * | 8a92bf5 test: agregar pruebas unitarias de la calculadora de tarifas
+|/ /  
+* |   bb87fd0 Merge branch 'feature/estructura-maven' into develop
+|\ \  
+| |/  
+|/|   
+| * 9e7ba56 (feature/estructura-maven) feat: exponer la API REST y el portal web del sistema
+| * 4da7389 feat: implementar el dominio y el servicio de reservas
+| * c673394 feat: configurar proyecto Maven con dependencias de pruebas
+|/  
+* 5eccb7f chore: inicializar repositorio con .gitignore y normalización de fin de línea
+
+----------------------------------------------------------------------
+  2. RAMAS DEL FLUJO GITFLOW
+----------------------------------------------------------------------
+  develop                     591c005 Merge branch 'release/1.0.0' into develop
+  feature/deploy-workflow     f0975a5 ci: agregar workflow de despliegue en GitHub Actions
+  feature/deployment-pipeline c29df66 ci: agregar el deployment pipeline con acceptance gate
+  feature/estructura-maven    9e7ba56 feat: exponer la API REST y el portal web del sistema
+  feature/pipeline-ci         0f4e320 ci: agregar workflow de GitHub Actions
+  feature/pruebas-integracion 1014537 test: agregar la suite E2E del portal web con Selenium
+  feature/pruebas-unitarias   fe5da2f test: agregar pruebas unitarias del servicio con Mockito
+* main                        e2aa19e Merge branch 'release/1.0.0' into main
+  release/1.0.0               5ed815a docs: incorporar las evidencias de ejecución real
+
+----------------------------------------------------------------------
+  3. TAGS DE VERSIÓN
+----------------------------------------------------------------------
+v1.0.0          Versión 1.0.0 - Actividades 1, 2 y 3 completas
+    
+    Repositorio GitFlow, proyecto Maven con dependencias de prueba,
+    pipeline de CI con pruebas unitarias y de integración, y deployment
+    pipeline con acceptance gate, Blue-Green, Canary y rollback.
+
+----------------------------------------------------------------------
+  4. RESUMEN
+----------------------------------------------------------------------
+  Commits totales        : 29
+  Commits de merge (--no-ff): 8
+  Ramas feature/*        : 6
+  Ramas release/*        : 1
+  Tags                   : 1
+  Archivos versionados   : 49
