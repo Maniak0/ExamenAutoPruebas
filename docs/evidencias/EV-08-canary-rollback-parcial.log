@@ -1,0 +1,63 @@
+============================================================================
+  DEPLOYMENT PIPELINE - ESTRATEGIA CANARY RELEASE
+  Versión candidata: 3.0.0
+  Escalones de tráfico: 10 25 50 100 %
+============================================================================
+
+[2026-09-20T19:19:38Z] ==> PASO 1/5 - Identificando la versión estable en producción
+[2026-09-20T19:19:38Z] Versión estable  : 1.0.0 (puerto 9081) - 100% del tráfico
+[2026-09-20T19:19:38Z] Versión canary   : 3.0.0 (puerto 9084) - aún sin tráfico
+
+[2026-09-20T19:19:38Z] ==> PASO 2/5 - Desplegando la instancia canary (peso 0%)
+[2026-09-20T19:19:38Z] Instancia 'canary' iniciada | puerto=9084 version=3.0.0 color=canary pid=10783
+[2026-09-20T19:19:39Z] [  OK  ] Health check de instancia canary superado en el intento 2 (puerto 9084)
+
+[2026-09-20T19:19:39Z] ==> PASO 3/5 - Smoke tests sobre la instancia canary
+----------------------------------------------------------------------
+  SMOKE TESTS sobre http://localhost:9084
+----------------------------------------------------------------------
+  [ OK ] El health check reporta la instancia como disponible
+  [ OK ] El portal web responde con código 200
+  [ OK ] La API de reservas responde con código 200
+  [ OK ] Se puede crear una reserva (flujo crítico)
+  [ OK ] La tarifa se calcula según la regla vigente
+  [ OK ] Los datos inválidos son rechazados con código 400
+----------------------------------------------------------------------
+  SMOKE TESTS SUPERADOS: 6/6 verificaciones correctas
+----------------------------------------------------------------------
+
+[2026-09-20T19:19:39Z] ==> PASO 4/5 - Incrementando el tráfico de forma progresiva
+
+[2026-09-20T19:19:39Z] --- Escalón: dirigiendo el 10% del tráfico al canary ---
+[2026-09-20T19:19:39Z] Enrutamiento actualizado | primario=9081 canary=9084 peso=10%
+[2026-09-20T19:19:43Z] Distribución medida sobre 200 peticiones: primario=186 canary=14 (7% al canary)
+[2026-09-20T19:19:43Z]   verificación 1/3: canary sano con 10% del tráfico
+[2026-09-20T19:19:44Z]   verificación 2/3: canary sano con 10% del tráfico
+[2026-09-20T19:19:45Z]   verificación 3/3: canary sano con 10% del tráfico
+[2026-09-20T19:19:46Z] [  OK  ] Escalón del 10% superado sin anomalías
+
+[2026-09-20T19:19:46Z] --- Escalón: dirigiendo el 25% del tráfico al canary ---
+[2026-09-20T19:19:46Z] Enrutamiento actualizado | primario=9081 canary=9084 peso=25%
+[2026-09-20T19:19:49Z] Distribución medida sobre 200 peticiones: primario=152 canary=48 (24% al canary)
+[2026-09-20T19:19:49Z] [ALERTA]   verificación 1/3: ANOMALÍA DETECTADA en el canary
+
+[2026-09-20T19:19:49Z] [ERROR ] ================================================================
+[2026-09-20T19:19:49Z] [ERROR ]  ANOMALÍA EN EL CANARY CON 25% DEL TRÁFICO
+[2026-09-20T19:19:49Z] [ERROR ]  Versión afectada: 3.0.0
+[2026-09-20T19:19:49Z] [ERROR ] ================================================================
+
+[2026-09-20T19:19:49Z] ==> ROLLBACK PARCIAL - retirando el canary del enrutamiento
+[2026-09-20T19:19:49Z] Enrutamiento actualizado | primario=9081 canary=0 peso=0%
+[2026-09-20T19:19:53Z] Distribución medida sobre 200 peticiones: primario=200 canary=0 (0% al canary)
+[2026-09-20T19:19:53Z] [  OK  ] Confirmado: el 100% del tráfico vuelve a la versión estable 1.0.0
+[2026-09-20T19:19:54Z] Instancia 'canary' detenida (pid=10783)
+[2026-09-20T19:19:54Z] Instancia canary retirada del ambiente
+[2026-09-20T19:19:54Z] [ALERTA] NOTIFICACIÓN -> canal #deploy-alerts: rollback parcial ejecutado
+[2026-09-20T19:19:54Z] [ALERTA]   Usuarios afectados: solo el 25% durante la ventana de detección
+[2026-09-20T19:19:54Z] [ALERTA]   Versión vigente   : 1.0.0
+
+============================================================================
+  RESULTADO: ROLLBACK PARCIAL COMPLETADO
+  El impacto quedó acotado al 25% del tráfico
+  Producción sirviendo la versión estable 1.0.0
+============================================================================

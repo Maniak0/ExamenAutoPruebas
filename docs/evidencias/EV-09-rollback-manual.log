@@ -1,0 +1,47 @@
+============================================================================
+  ROLLBACK MANUAL ASISTIDO
+============================================================================
+
+[2026-09-20T19:20:04Z] ==> Inventario del ambiente
+
+  azul       puerto 9081   version 1.0.0      sana      
+  verde      puerto 9082   version 1.1.0      sana        <== RECIBE EL TRÁFICO
+  canary     puerto 9084   [ detenida ]
+
+
+[2026-09-20T19:20:04Z] ==> Determinando el destino del rollback
+[2026-09-20T19:20:04Z] Versión que atiende actualmente: 1.1.0 (puerto 9082)
+[2026-09-20T19:20:04Z] Destino seleccionado automáticamente: entorno en stand-by (puerto 9081)
+
+[2026-09-20T19:20:04Z] ==> Validando la salud del destino antes de conmutar
+[2026-09-20T19:20:04Z] [  OK  ] Destino sano y disponible: versión 1.0.0
+
+[2026-09-20T19:20:04Z] ==> Ejecutando el rollback
+[2026-09-20T19:20:04Z] Enrutamiento actualizado | primario=9081 canary=0 peso=0%
+[2026-09-20T19:20:05Z] El balanceador responde ahora: {"version":"1.0.0","color":"azul"}
+[2026-09-20T19:20:05Z] [  OK  ] ROLLBACK COMPLETADO: producción sirve la versión 1.0.0
+
+[2026-09-20T19:20:05Z] ==> Verificación funcional posterior al rollback
+----------------------------------------------------------------------
+  SMOKE TESTS sobre http://localhost:9081
+----------------------------------------------------------------------
+  [ OK ] El health check reporta la instancia como disponible
+  [ OK ] El portal web responde con código 200
+  [ OK ] La API de reservas responde con código 200
+  [ OK ] Se puede crear una reserva (flujo crítico)
+  [ OK ] La tarifa se calcula según la regla vigente
+  [ OK ] Los datos inválidos son rechazados con código 400
+----------------------------------------------------------------------
+  SMOKE TESTS SUPERADOS: 6/6 verificaciones correctas
+----------------------------------------------------------------------
+[2026-09-20T19:20:05Z] [  OK  ] Los flujos críticos operan correctamente tras el rollback
+[2026-09-20T19:20:05Z] [ALERTA] NOTIFICACIÓN -> canal #deploy-alerts: rollback manual ejecutado
+[2026-09-20T19:20:05Z] [ALERTA]   De : 1.1.0
+[2026-09-20T19:20:05Z] [ALERTA]   A  : 1.0.0
+[2026-09-20T19:20:05Z] [ALERTA]   Operador: pipeline
+
+============================================================================
+  RESULTADO: ROLLBACK MANUAL COMPLETADO
+  Versión restaurada : 1.0.0
+  Registro auditable : /home/claude/proyecto-qa-reservas/infra/estado/historial-despliegues.log
+============================================================================

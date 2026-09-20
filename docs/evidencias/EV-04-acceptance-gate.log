@@ -1,0 +1,59 @@
+============================================================================
+  AUTOMATED ACCEPTANCE TEST GATE
+  Versión candidata: 1.1.0
+  Ambiente         : staging (puerto 9083)
+============================================================================
+
+[2026-09-20T19:17:27Z] ==> PASO 1/4 - Desplegando la versión 1.1.0 en staging
+[2026-09-20T19:17:27Z] Instancia 'staging' iniciada | puerto=9083 version=1.1.0 color=staging pid=1249
+
+[2026-09-20T19:17:27Z] ==> PASO 2/4 - Esperando a que staging quede operativo
+[2026-09-20T19:17:28Z] [  OK  ] Health check de staging superado en el intento 2 (puerto 9083)
+
+[2026-09-20T19:17:28Z] ==> PASO 3/4 - Ejecutando las pruebas de aceptación contra staging
+[2026-09-20T19:17:28Z] [ALERTA] Ejecución forzada sin Maven (--sin-maven)
+[2026-09-20T19:17:28Z] Ejecutando la verificación de aceptación equivalente vía HTTP
+======================================================================
+  SUITE DE ACEPTACIÓN - criterios de negocio sobre http://localhost:9083
+======================================================================
+
+  ESCENARIO: El servicio desplegado está operativo (smoke)
+    [ OK ] Dado que el ambiente fue desplegado, el health check responde UP
+    [ OK ] Y el portal web expone el formulario de reserva
+
+  ESCENARIO: Registrar una reserva en temporada normal
+    [ OK ] Cuando reserva 3 noches para 2 personas, la reserva queda confirmada
+    [ OK ] Y el valor total de la reserva es 270000
+
+  ESCENARIO: Registrar una reserva en temporada alta con estadía prolongada
+    [ OK ] Cuando reserva 7 noches en enero, la reserva queda confirmada
+    [ OK ] Y el valor total aplica recargo de temporada alta y descuento: 708750
+
+  ESCENARIO: Consultar y cancelar una reserva vigente
+    [ OK ] Dado que existe la reserva, el cliente puede consultarla
+    [ OK ] Cuando solicita la cancelación, la reserva queda cancelada
+    [ OK ] Y el cambio de estado quedó efectivamente persistido
+
+  ESCENARIO: Impedir reservas duplicadas
+    [ OK ] Dado que el cliente ya tiene una reserva para esa fecha (201)
+    [ OK ] Cuando intenta reservar de nuevo, el sistema rechaza por conflicto
+
+  ESCENARIO: Validar los límites de capacidad de una reserva
+    [ OK ] Con 8 personas (máximo permitido) el sistema responde 201
+    [ OK ] Con 9 personas el sistema responde 400
+    [ OK ] Con 0 noches el sistema responde 400
+
+======================================================================
+  ACEPTACIÓN SUPERADA: 14/14 criterios de negocio cumplidos
+======================================================================
+[2026-09-20T19:17:28Z] [  OK  ] Verificación de aceptación SUPERADA
+
+[2026-09-20T19:17:28Z] ==> PASO 4/4 - Decisión del gate
+[2026-09-20T19:17:29Z] Instancia 'staging' detenida (pid=1249)
+[2026-09-20T19:17:29Z] Ambiente de staging liberado
+[2026-09-20T19:17:29Z] [  OK  ] GATE SUPERADO: la versión 1.1.0 queda habilitada para producción
+
+============================================================================
+  ACCEPTANCE GATE: APROBADO
+  La versión 1.1.0 puede promoverse a producción.
+============================================================================
