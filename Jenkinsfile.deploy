@@ -1,0 +1,240 @@
+// ============================================================================
+//  ACTIVIDAD 3 - DEPLOYMENT PIPELINE
+//  Sistema de Reservas Turísticas - IPLACEX
+// ----------------------------------------------------------------------------
+//  Tubería de despliegue que toma el artefacto validado por el pipeline de CI
+//  y lo lleva de forma segura hasta producción, siguiendo el esquema del
+//  Módulo de Estudio 5:
+//
+//    Commit Stage -> Deploy Staging -> ACCEPTANCE GATE -> Deploy Producción
+//                                                          (Blue-Green/Canary)
+//                                                              |
+//                                                     Monitoreo + ROLLBACK
+//
+//  Principios aplicados:
+//   - "Build once, deploy many": el .jar se construye UNA vez y el mismo
+//     artefacto se promueve por todos los ambientes.
+//   - Gates de calidad: ninguna versión avanza si no supera su barrera.
+//   - Rollback automático: toda promoción tiene un camino de vuelta probado.
+//   - Auditoría: cada fase registra metadatos verificables (ME_6 §5).
+// ============================================================================
+
+pipeline {
+
+    agent any
+
+    tools {
+        maven 'Maven-3.9'
+        jdk   'JDK-17'
+    }
+
+    parameters {
+        string(
+            name: 'VERSION',
+            defaultValue: '1.1.0',
+            description: 'Versión a desplegar'
+        )
+        choice(
+            name: 'ESTRATEGIA',
+            choices: ['blue-green', 'canary'],
+            description: 'Estrategia de despliegue a producción'
+        )
+        booleanParam(
+            name: 'SIMULAR_FALLO',
+            defaultValue: false,
+            description: 'Despliega una versión con defecto latente para demostrar el rollback automático'
+        )
+    }
+
+    options {
+        timeout(time: 45, unit: 'MINUTES')
+        buildDiscarder(logRotator(numToKeepStr: '30'))
+        timestamps()
+        disableConcurrentBuilds()
+    }
+
+    environment {
+        PUERTO_ROUTER  = '9080'
+        PUERTO_AZUL    = '9081'
+        PUERTO_VERDE   = '9082'
+        PUERTO_STAGING = '9083'
+    }
+
+    stages {
+
+        // ==================================================================
+        // ETAPA 1: COMMIT STAGE
+        // Construye el artefacto UNA sola vez. A partir de aquí, todas las
+        // etapas trabajan sobre este mismo binario.
+        // ==================================================================
+        stage('Commit Stage') {
+            steps {
+                echo "==> Construyendo el artefacto de la versión ${params.VERSION}"
+                checkout scm
+                sh 'mvn -B clean package -DskipTests'
+                sh 'mvn -B test'
+            }
+            post {
+                always {
+                    junit testResults: 'target/surefire-reports/*.xml',
+                          allowEmptyResults: true
+                }
+                success {
+                    // Se conserva el artefacto exacto que se promoverá
+                    archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
+                }
+                failure {
+                    error("Commit stage fallido: corrija los errores antes de continuar.")
+                }
+            }
+        }
+
+        // ==================================================================
+        // ETAPA 2: REGISTRO DE METADATOS DE AUDITORÍA
+        // Permite reconstruir cualquier despliegue desde el repositorio hasta
+        // la versión en producción (ME_6 §5.2: trazabilidad total).
+        // ==================================================================
+        stage('Auditoría - Registrar Metadatos') {
+            steps {
+                script {
+                    def metadatos = """{
+  "version":     "${params.VERSION}",
+  "estrategia":  "${params.ESTRATEGIA}",
+  "build":       "${env.BUILD_NUMBER}",
+  "commit":      "${sh(script: 'git rev-parse HEAD', returnStdout: true).trim()}",
+  "rama":        "${sh(script: 'git rev-parse --abbrev-ref HEAD', returnStdout: true).trim()}",
+  "disparadoPor":"${env.BUILD_USER_ID ?: 'pipeline'}",
+  "marcaTiempo": "${new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")}"
+}"""
+                    writeFile file: 'target/deploy-metadata.json', text: metadatos
+                    echo metadatos
+                }
+            }
+        }
+
+        // ==================================================================
+        // ETAPA 3: APROVISIONAR EL AMBIENTE
+        // ==================================================================
+        stage('Aprovisionar Ambiente') {
+            steps {
+                echo "==> Levantando el ambiente de despliegue"
+                sh 'chmod +x infra/*.sh'
+                sh './infra/preparar-ambiente.sh --version 1.0.0'
+            }
+        }
+
+        // ==================================================================
+        // ETAPA 4: DESPLIEGUE EN STAGING + ACCEPTANCE TEST GATE
+        // Barrera crítica: solo las versiones que cumplen los criterios de
+        // negocio avanzan a producción (ME_5 §1.4).
+        // ==================================================================
+        stage('Acceptance Test Gate') {
+            steps {
+                echo "==> Desplegando en staging y ejecutando pruebas de aceptación"
+                sh "./infra/acceptance-gate.sh --version ${params.VERSION}"
+            }
+            post {
+                always {
+                    publishHTML(target: [
+                        allowMissing         : true,
+                        alwaysLinkToLastBuild: true,
+                        keepAll              : true,
+                        reportDir            : 'target',
+                        reportFiles          : 'cucumber-report.html',
+                        reportName           : 'Reporte de Aceptación BDD'
+                    ])
+                    junit testResults: 'target/failsafe-reports/*.xml',
+                          allowEmptyResults: true
+                }
+                failure {
+                    error("ACCEPTANCE GATE RECHAZADO: la versión no avanza a producción.")
+                }
+            }
+        }
+
+        // ==================================================================
+        // ETAPA 5: DESPLIEGUE A PRODUCCIÓN
+        // La estrategia se elige por parámetro. Ambas incorporan health checks,
+        // smoke tests, ventana de monitoreo y rollback automático.
+        // ==================================================================
+        stage('Despliegue a Producción') {
+            steps {
+                script {
+                    def banderaFallo = params.SIMULAR_FALLO ? '--fallo-tras 4' : ''
+                    def codigoSalida
+
+                    if (params.ESTRATEGIA == 'canary') {
+                        echo "==> Despliegue CANARY progresivo de la versión ${params.VERSION}"
+                        codigoSalida = sh(
+                            script: "./infra/deploy-canary.sh --version ${params.VERSION} ${banderaFallo}",
+                            returnStatus: true
+                        )
+                    } else {
+                        echo "==> Despliegue BLUE-GREEN de la versión ${params.VERSION}"
+                        codigoSalida = sh(
+                            script: "./infra/deploy-blue-green.sh --version ${params.VERSION} ${banderaFallo}",
+                            returnStatus: true
+                        )
+                    }
+
+                    // Código 3: el script ejecutó un rollback automático.
+                    // El despliegue no prosperó, pero el SISTEMA DE RECUPERACIÓN
+                    // funcionó: se marca como inestable, no como build fallido,
+                    // porque producción quedó sana.
+                    if (codigoSalida == 3) {
+                        currentBuild.result = 'UNSTABLE'
+                        echo """
+                        =====================================================
+                         ROLLBACK AUTOMÁTICO EJECUTADO
+                         La versión ${params.VERSION} fue revertida.
+                         Producción permanece estable y sin downtime.
+                        =====================================================
+                        """
+                    } else if (codigoSalida != 0) {
+                        error("Despliegue fallido con código ${codigoSalida}")
+                    }
+                }
+            }
+        }
+
+        // ==================================================================
+        // ETAPA 6: VERIFICACIÓN POSTERIOR AL DESPLIEGUE
+        // ==================================================================
+        stage('Verificación Post-Despliegue') {
+            steps {
+                echo "==> Verificando el estado final de producción"
+                sh './infra/rollback.sh --estado'
+                sh "./infra/smoke-test.sh ${env.PUERTO_ROUTER}"
+            }
+        }
+    }
+
+    // ======================================================================
+    //  EVIDENCIA, NOTIFICACIONES Y LIMPIEZA
+    // ======================================================================
+    post {
+        always {
+            echo "==> Archivando la evidencia del despliegue"
+            // Bitácora inmutable del despliegue: constituye la evidencia
+            // exigida para auditoría y cumplimiento (ME_6 §5.4).
+            archiveArtifacts artifacts: 'infra/estado/historial-despliegues.log, target/deploy-metadata.json',
+                             allowEmptyArchive: true
+            sh './infra/limpiar.sh || true'
+        }
+        success {
+            echo "DESPLIEGUE EXITOSO: versión ${params.VERSION} en producción."
+            // slackSend channel: '#deploy', color: 'good',
+            //           message: "Desplegada ${params.VERSION} vía ${params.ESTRATEGIA}"
+        }
+        unstable {
+            echo "ROLLBACK EJECUTADO: producción estable en la versión anterior."
+            // slackSend channel: '#deploy-alerts', color: 'warning',
+            //           message: "Rollback automático de ${params.VERSION}"
+        }
+        failure {
+            echo "DESPLIEGUE FALLIDO: revise los reportes del gate."
+            // slackSend channel: '#deploy-alerts', color: 'danger',
+            //           message: "Despliegue fallido de ${params.VERSION}"
+        }
+    }
+}
