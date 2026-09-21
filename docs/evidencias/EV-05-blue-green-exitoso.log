@@ -1,0 +1,51 @@
+============================================================================
+  DEPLOYMENT PIPELINE - ESTRATEGIA BLUE-GREEN
+  Versión candidata: 1.1.0
+============================================================================
+
+[2026-09-20T20:09:43Z] ==> PASO 1/6 - Identificando el entorno activo
+[2026-09-20T20:09:43Z] Entorno ACTIVO    : azul  (puerto 9081)  <- atiende usuarios
+[2026-09-20T20:09:43Z] Entorno CANDIDATO : verde (puerto 9082)  <- recibirá la versión nueva
+[2026-09-20T20:09:43Z] Versión actualmente en producción: 1.0.0
+
+[2026-09-20T20:09:43Z] ==> PASO 2/6 - Desplegando 1.1.0 en el entorno verde
+[2026-09-20T20:09:43Z] Instancia 'verde' iniciada | puerto=9082 version=1.1.0 color=verde pid=2110
+
+[2026-09-20T20:09:43Z] ==> PASO 3/6 - Verificando la salud del entorno verde
+[2026-09-20T20:09:44Z] [  OK  ] Health check de entorno verde superado en el intento 2 (puerto 9082)
+
+[2026-09-20T20:09:44Z] ==> PASO 4/6 - Ejecutando smoke tests sobre el entorno verde
+----------------------------------------------------------------------
+  SMOKE TESTS sobre http://localhost:9082
+----------------------------------------------------------------------
+  [ OK ] El health check reporta la instancia como disponible
+  [ OK ] El portal web responde con código 200
+  [ OK ] La API de reservas responde con código 200
+  [ OK ] Se puede crear una reserva (flujo crítico)
+  [ OK ] La tarifa se calcula según la regla vigente
+  [ OK ] Los datos inválidos son rechazados con código 400
+----------------------------------------------------------------------
+  SMOKE TESTS SUPERADOS: 6/6 verificaciones correctas
+----------------------------------------------------------------------
+
+[2026-09-20T20:09:44Z] ==> PASO 5/6 - Conmutando el tráfico de azul a verde
+[2026-09-20T20:09:44Z] Enrutamiento actualizado | primario=9082 canary=0 peso=0%
+[2026-09-20T20:09:45Z] El balanceador ahora responde: {"version":"1.1.0","color":"verde"}
+[2026-09-20T20:09:45Z] [  OK  ] Switch completado sin downtime. La versión 1.1.0 atiende a los usuarios.
+[2026-09-20T20:09:45Z] El entorno azul (versión 1.0.0) queda en STAND-BY para rollback inmediato
+
+[2026-09-20T20:09:45Z] ==> PASO 6/6 - Monitoreando la versión 1.1.0 durante 4s
+[2026-09-20T20:09:45Z]   monitoreo t+1s: instancia sana
+[2026-09-20T20:09:46Z]   monitoreo t+2s: instancia sana
+[2026-09-20T20:09:47Z]   monitoreo t+3s: instancia sana
+[2026-09-20T20:09:48Z]   monitoreo t+4s: instancia sana
+
+[2026-09-20T20:09:49Z] [  OK  ] Ventana de monitoreo superada sin incidentes
+[2026-09-20T20:09:49Z] Registro de auditoría: /home/claude/proyecto-qa-reservas/infra/estado/historial-despliegues.log
+
+============================================================================
+  RESULTADO: DESPLIEGUE BLUE-GREEN EXITOSO
+  Versión en producción : 1.1.0  (entorno verde)
+  Versión en stand-by   : 1.0.0  (entorno azul)
+  Downtime              : ninguno
+============================================================================
