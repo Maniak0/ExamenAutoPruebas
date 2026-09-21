@@ -80,8 +80,10 @@ if command -v mvn >/dev/null 2>&1 && [[ "${FORZAR_SIN_MAVEN}" == "no" ]]; then
     # Gherkin se ejecutan contra el ambiente que acabamos de desplegar.
     log "Ejecutando: mvn verify -Paceptacion -Dtest.baseUrl=${BASE_URL}"
 
-    if (cd "${DIR_RAIZ}" && mvn -B verify -Paceptacion \
-            -Dtest.baseUrl="${BASE_URL}" -DskipUnitTests=true); then
+    # El perfil 'aceptacion' omite las pruebas unitarias y la medicion de
+    # cobertura: aqui solo se validan los criterios de negocio sobre staging.
+    if (cd "${DIR_RAIZ}" && mvn -B --no-transfer-progress verify -Paceptacion \
+            -Dtest.baseUrl="${BASE_URL}"); then
         log_ok "Suite de aceptación SUPERADA"
     else
         log_error "Suite de aceptación FALLIDA"
