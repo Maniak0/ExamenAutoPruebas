@@ -368,6 +368,30 @@
             <id>aceptacion</id>
             <build>
                 <plugins>
+                    <!-- El gate valida un ambiente YA desplegado: las pruebas
+                         unitarias ya se ejecutaron en el Commit Stage y no
+                         corresponde repetirlas aquí. -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <version>${surefire.version}</version>
+                        <configuration>
+                            <skipTests>true</skipTests>
+                        </configuration>
+                    </plugin>
+                    <!-- JaCoCo solo mide el código que ejecuta este mismo proceso
+                         de Maven. Contra staging, la aplicación corre en OTRO
+                         proceso, por lo que la cobertura medida sería 0% y el
+                         umbral del 80% rechazaría una versión correcta. La
+                         cobertura es responsabilidad del pipeline de CI. -->
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <version>${jacoco.version}</version>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-failsafe-plugin</artifactId>
