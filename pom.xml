@@ -274,6 +274,26 @@
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>${jacoco.version}</version>
+                <!-- Las reglas del umbral se declaran a nivel de PLUGIN y no dentro
+                     de una <execution>. Una configuración anidada en la ejecución
+                     solo aplica cuando el goal corre ligado a la fase verify; si el
+                     pipeline invoca 'mvn jacoco:check' directamente, Maven no la ve
+                     y el build aborta por falta de reglas. A nivel de plugin, el
+                     mismo umbral rige en ambos casos. -->
+                <configuration>
+                    <rules>
+                        <rule>
+                            <element>BUNDLE</element>
+                            <limits>
+                                <limit>
+                                    <counter>LINE</counter>
+                                    <value>COVEREDRATIO</value>
+                                    <minimum>${jacoco.linea.minima}</minimum>
+                                </limit>
+                            </limits>
+                        </rule>
+                    </rules>
+                </configuration>
                 <executions>
                     <execution>
                         <id>preparar-agente</id>
@@ -294,20 +314,6 @@
                         <goals>
                             <goal>check</goal>
                         </goals>
-                        <configuration>
-                            <rules>
-                                <rule>
-                                    <element>BUNDLE</element>
-                                    <limits>
-                                        <limit>
-                                            <counter>LINE</counter>
-                                            <value>COVEREDRATIO</value>
-                                            <minimum>${jacoco.linea.minima}</minimum>
-                                        </limit>
-                                    </limits>
-                                </rule>
-                            </rules>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
